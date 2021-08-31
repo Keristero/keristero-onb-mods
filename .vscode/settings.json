@@ -1,0 +1,25 @@
+{
+    "Lua.diagnostics.globals": [
+        "Engine",
+        "Battle",
+        "DefenseOrder",
+        "_modpath",
+        "Playback",
+        "Hit",
+        "Flinched",
+        "Element",
+        "Color",
+        "make_animation_lockout",
+        "make_hit_props",
+        "drag",
+        "Direction",
+        "ActionOrder",
+        "Highlight",
+        "AudioPriority",
+        "TileState",
+        "make_sequence_lockout"
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
+    ]
+}
