@@ -29,11 +29,11 @@ uppercut animation
 1. 4 prep punch (A)
 2. 5 prep punch (B)
 3. 1 prep punch (A) again!
-2. 2 prep punch (B) again!
-3. 4 punching (first frame can hit player)
-4. 2 punching (mid swing)
-5. 6 punching (end of swing)
-6. 66 frames of idling before teleporting back to start
+4. 2 prep punch (B) again!
+5. 4 punching (first frame can hit player)
+6. 2 punching (mid swing)
+7. 6 punching (end of swing)
+8. 66 frames of idling before teleporting back to start
 
 punch impact explosion
 1. 3 (small impact)

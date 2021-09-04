@@ -54,7 +54,7 @@ function create_charged_attack(player)
     action.execute_func = function(self, player)
         local do_attack = function()
             local direction = player:get_facing()
-            local target_tile = target_first_enemy_tile(player,direction,false)
+            local target_tile = target_first_enemy_tile(player,direction,true)
             if target_tile then
                 spawn_cross_divide_slash(player,target_tile:x(),target_tile:y(),direction)
             end

@@ -17,7 +17,10 @@
         "Highlight",
         "AudioPriority",
         "TileState",
-        "make_sequence_lockout"
+        "make_sequence_lockout",
+        "Rank",
+        "Lifetimes",
+        "reverse_dir"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

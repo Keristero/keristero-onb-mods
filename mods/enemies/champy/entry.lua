@@ -14,14 +14,11 @@ function package_init(package)
     package:declare_package_id(mob_package_id)
     package:set_name(character_name)
     package:set_description("test fight with a "..character_name)
-    package:set_speed(999)
-    package:set_attack(999)
-    package:set_health(9999)
     package:set_preview_texture_path(_modpath.."preview.png")
 end
 
 function package_build(mob) 
     --can setup backgrounds, music, and field here
-    local test_spawner = mob:create_spawner(character_package_id)
+    local test_spawner = mob:create_spawner(character_package_id,Rank.V1)
     test_spawner:spawn_at(5, 2)
 end
