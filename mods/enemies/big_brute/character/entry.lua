@@ -4,10 +4,6 @@ local enemy_info = {
     hp = 120,
 }
 
-local fire_tower_animation_path = nil
-local fire_tower_texture_path = nil
-local fire_tower_texture
-
 function debug_print(text)
     print("[bigbrute] "..text)
 end
@@ -185,23 +181,23 @@ function action_beast_breath(character)
         end
 
         step2.update_func = function(self, dt)
-            --debug_print('action '..action_name..' step 2')
-            if not action.attack_anim_started then
-                local anim = actor:get_animation()
-                anim:set_state("ATTACK")
-                anim:set_playback(Playback.Loop)
-                action.attack_anim_started = true
-            end
-            if action.attack_time_counter < action.attack_time then
-                action.attack_time_counter = action.attack_time_counter + dt
-            else
-                debug_print('action '..action_name..' step 2 complete')
-                local anim = actor:get_animation()
-                anim:set_state("IDLE")
-                anim:set_playback(Playback.Loop)
-                self:complete_step()
-            end
+        --debug_print('action '..action_name..' step 2')
+        if not action.attack_anim_started then
+            local anim = actor:get_animation()
+            anim:set_state("ATTACK")
+            anim:set_playback(Playback.Loop)
+            action.attack_anim_started = true
         end
+        if action.attack_time_counter < action.attack_time then
+            action.attack_time_counter = action.attack_time_counter + dt
+        else
+            debug_print('action '..action_name..' step 2 complete')
+            local anim = actor:get_animation()
+            anim:set_state("IDLE")
+            anim:set_playback(Playback.Loop)
+            self:complete_step()
+        end
+    end
 
         self:add_step(step1)
         self:add_step(step2)
@@ -210,6 +206,10 @@ function action_beast_breath(character)
 end
 
 function fire_tower_spell(user,damage,duration,warning_duration,x,y)
+    local field = user:get_field()
+    if x == 0 or x >= field:width()+1 or y == 0 or y >= field:height()+1 then
+        return
+    end
     local spell = Battle.Spell.new(user:get_team())
     spell:set_texture(fire_tower_texture, true)
     spell:highlight_tile(Highlight.Flash)
@@ -239,6 +239,7 @@ function fire_tower_spell(user,damage,duration,warning_duration,x,y)
         if self.elapsed >= self.duration_states[spell.current_state] then
             self.current_state = self.current_state + 1
             self.state_changed = true
+            self.elapsed = 0
         end
         if self.state_changed then
             local anim = self:get_animation()
@@ -246,6 +247,12 @@ function fire_tower_spell(user,damage,duration,warning_duration,x,y)
                 spell:sprite():show()
                 anim:set_state("START")
                 anim:set_playback(Playback.Once)
+                anim:on_complete(function ()
+                    print("anim finished!")
+                    self.current_state = self.current_state + 1
+                    self.state_changed = true
+                    self.elapsed = 0
+                end)
                 self:highlight_tile(Highlight.None)
             end
             if self.current_state == 3 then
@@ -255,6 +262,12 @@ function fire_tower_spell(user,damage,duration,warning_duration,x,y)
             if self.current_state == 4 then
                 anim:set_state("END")
                 anim:set_playback(Playback.Once)
+                anim:on_complete(function ()
+                    print("anim finished! like totally")
+                    self.current_state = self.current_state + 1
+                    self.state_changed = true
+                    self.elapsed = 0
+                end)
             end
             if self.current_state == 5 then
                 debug_print('spell complete')
@@ -274,6 +287,6 @@ function fire_tower_spell(user,damage,duration,warning_duration,x,y)
     anim:load(fire_tower_animation_path)
     anim:set_state("START")
 
-    user:get_field():spawn(spell, x, y)
+    field:spawn(spell, x, y)
     --use direct hit / back of field animation
 end
