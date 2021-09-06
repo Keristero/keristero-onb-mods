@@ -4,6 +4,8 @@ the virus will avoid jumping to the same row as the player until it attacks
 when it attacks it will jump to either of its front 2 columns in the same row as the player
 
 # frames
+frames before spell spawn
+6
 frames before fire breath
 44
 frames after fire breath
