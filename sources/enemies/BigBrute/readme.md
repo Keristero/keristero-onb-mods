@@ -14,5 +14,8 @@ frames after fire breath
 frames between jumps
 40
 
+frames that flames are looping for
+30?
+
 number of jumps before attacking
 4 or 5
