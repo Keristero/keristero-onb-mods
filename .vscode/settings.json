@@ -20,7 +20,8 @@
         "make_sequence_lockout",
         "Rank",
         "Lifetimes",
-        "reverse_dir"
+        "reverse_dir",
+        "ParticleType"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

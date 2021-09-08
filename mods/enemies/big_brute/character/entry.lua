@@ -77,7 +77,7 @@ function package_init(self)
     end
     self.can_move_to_func = function(tile)
         debug_print("can_move_to_func called")
-        return true
+        return is_tile_free_for_movement(tile,self)
     end
     self.delete_func = function(self) debug_print("delete_func called") end
 end
@@ -97,15 +97,10 @@ function big_brute_teleport(character, is_attacking)
 
     local target_tile = nil
     allowed_movement_tiles = field:find_tiles(function(other_tile)
-        if other_tile:get_team() ~= user_team then return false end
-        if not other_tile:is_walkable() then return false end
-        local occupants = other_tile:find_characters(function(other_character)
-            return true
-        end)
-        if #occupants > 0 then 
+        if not is_tile_free_for_movement(other_tile,character) then
             return false
         end
-        if other_tile:is_reserved({}) then
+        if other_tile:is_reserved({character}) then
             return false
         end
         if target_character_tile:y() == other_tile:y() then
@@ -130,6 +125,19 @@ function big_brute_teleport(character, is_attacking)
         character:teleport(target_tile, ActionOrder.Immediate)
     end
     character:card_action_event(teleport_action, ActionOrder.Immediate)
+end
+
+function is_tile_free_for_movement(tile,character)
+    --Basic check to see if a tile is suitable for a chracter of a team to move to
+    if tile:get_team() ~= character:get_team() then return false end
+    if not tile:is_walkable() then return false end
+    local occupants = tile:find_characters(function(other_character)
+        return true
+    end)
+    if #occupants > 0 then 
+        return false
+    end
+    return true
 end
 
 function spawn_visual_artifact(tile,character,texture,animation_path,animation_state,position_x,position_y)
@@ -277,7 +285,7 @@ function fire_tower_spell(user, damage, duration, warning_duration, x, y)
     local spell = Battle.Spell.new(user:get_team())
     spell:set_texture(fire_tower_texture, true)
     spell:highlight_tile(Highlight.Flash)
-    spell:set_hit_props(make_hit_props(damage, Hit.Impact | Hit.Flinch,
+    spell:set_hit_props(make_hit_props(damage, Hit.Impact | Hit.Flash | Hit.Flinch,
                                        Element.Fire, user:get_id(),
                                        drag(Direction.Right, 0)))
     spell.elapsed = 0
@@ -285,6 +293,12 @@ function fire_tower_spell(user, damage, duration, warning_duration, x, y)
     spell.state_changed = false
 
     spell.duration_states = {warning_duration, 0.15, duration, 0.15, 999}
+
+    spell.attack_func = function(self, other)
+        local tile = self:get_current_tile()
+        --TODO replace this with volcano effect (gotta make the animation)
+        spawn_visual_artifact(tile,self,teleport_texture,teleport_animation_path,"BIG_TELEPORT_FROM",0,40)
+    end
 
     spell.update_func = function(self, delta_time)
         self.elapsed = self.elapsed + delta_time
