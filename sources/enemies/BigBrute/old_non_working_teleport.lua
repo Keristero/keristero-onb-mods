@@ -102,12 +102,7 @@ function big_brute_teleport(character, is_attacking)
         local occupants = other_tile:find_characters(function(other_character)
             return true
         end)
-        if #occupants > 0 then 
-            return false
-        end
-        if other_tile:is_reserved({}) then
-            return false
-        end
+        if #occupants > 0 then return false end
         if target_character_tile:y() == other_tile:y() then
             return is_attacking
         else
@@ -124,9 +119,6 @@ function big_brute_teleport(character, is_attacking)
     target_tile:reserve_entity_by_id(character:get_id())
     teleport_action.action_end_func = function(self)
         debug_print('action end func')
-        local departure_tile = character:get_current_tile()
-        spawn_visual_artifact(departure_tile,character,teleport_texture,teleport_animation_path,teleport_action.teleport_size.."_TELEPORT_FROM",0,-character_info.height)
-        print('target tile '..target_tile:x()..' '..target_tile:y())
         character:teleport(target_tile, ActionOrder.Immediate)
     end
     character:card_action_event(teleport_action, ActionOrder.Immediate)
@@ -153,11 +145,11 @@ function action_teleport(character, target_tile)
     local action = Battle.CardAction.new(character, "IDLE")
     action:set_lockout(make_sequence_lockout())
 
-    action.teleport_size = "SMALL"
+    local teleport_size = "SMALL"
     if character_info.height > 60 then
-        action.teleport_size = "BIG"
+        teleport_size = "BIG"
     elseif character_info.height > 40 then
-        action.teleport_size = "MEDIUM"
+        teleport_size = "MEDIUM"
     end
 
     action.execute_func = function(self)
@@ -174,17 +166,32 @@ function action_teleport(character, target_tile)
         step1.update_func = function(self, dt)
             debug_print('action ' .. action_name .. ' step 1 update')
             if not action.arrival_artifact_created then
-                spawn_visual_artifact(target_tile,character,teleport_texture,teleport_animation_path,action.teleport_size.."_TELEPORT_TO",0,-character_info.height)
+                spawn_visual_artifact(target_tile,character,teleport_texture,teleport_animation_path,teleport_size.."_TELEPORT_TO",0,-character_info.height)
                 action.arrival_artifact_created = true
             end
             if action.elapsed <= action.pre_teleport_ms then
+                debug_print('elapsed ' .. action.elapsed)
                 action.elapsed = action.elapsed + dt
                 return
             end
             self:complete_step()
             debug_print('action ' .. action_name .. ' step 1 complete')
         end
+
+        step2.update_func = function(self, dt)
+            debug_print('action ' .. action_name .. ' step 2 update')
+            local departure_tile = character:get_current_tile()
+            if not action.departure_artifact_created then
+                spawn_visual_artifact(departure_tile,character,teleport_texture,teleport_animation_path,teleport_size.."_TELEPORT_FROM",0,-character_info.height)
+                action.departure_artifact_created = true
+            end
+            print('target tile '..target_tile:x()..' '..target_tile:y())
+            actor:teleport(target_tile, ActionOrder.Immediate)
+            self:complete_step()
+            debug_print('action ' .. action_name .. ' step 2 complete')
+        end
         action:add_step(step1)
+        action:add_step(step2)
     end
     return action
 end

@@ -19,3 +19,7 @@ frames that flames are looping for
 
 number of jumps before attacking
 4 or 5
+
+# teleporting
+2 frames before it teleports, a teleport_in animation appears on the target tile
+on the frame that it teleports a teleport_out animation appears
