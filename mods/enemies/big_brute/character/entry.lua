@@ -1,6 +1,10 @@
 local character_info = {name = "BigBrute", hp = 120,height=60}
-
-function debug_print(text) print("[bigbrute] " .. text) end
+local debug = false
+function debug_print(text)
+    if debug then
+        print("[bigbrute] " .. text)
+    end
+end
 
 function package_init(self)
     debug_print("package_init called")
@@ -15,10 +19,16 @@ function package_init(self)
     fire_tower_animation_path = _modpath .. "firetower.animation"
     fire_tower_texture_path = _modpath .. "firetower.png"
     fire_tower_texture = Engine.load_texture(fire_tower_texture_path)
+    fire_tower_sound = Engine.load_audio(_modpath.."firetower.ogg")
 
     teleport_animation_path = _modpath .. "teleport.animation"
     teleport_texture_path = _modpath .. "teleport.png"
     teleport_texture = Engine.load_texture(teleport_texture_path)
+
+    impacts_animation_path = _modpath .. "impacts.animation"
+    impacts_texture_path = _modpath .. "impacts.png"
+    impacts_texture = Engine.load_texture(impacts_texture_path)
+
 
     -- Set up character meta
     self:set_name(character_info.name)
@@ -28,6 +38,10 @@ function package_init(self)
     self:share_tile(false)
     self:set_explosion_behavior(4, 1.0, false)
     self:set_position(0, 0)
+
+    -- keep track of spells that can be interrupted
+    self.next_spell_id = 0
+    self.interruptable_spells = {}
 
     -- Initial state
     self.animation:set_state("IDLE")
@@ -80,6 +94,19 @@ function package_init(self)
         return is_tile_free_for_movement(tile,self)
     end
     self.delete_func = function(self) debug_print("delete_func called") end
+    self:register_status_callback(Hit.Flinch,function ()
+        debug_print("Got flinched!")
+        if self.interruptable_action then
+            debug_print("Ending interruptable_action")
+            self.interruptable_action:end_action()
+            self.interruptable_action = nil
+        end
+        for spell_id, spell in pairs(self.interruptable_spells) do
+            debug_print("interruped spell"..spell_id)
+            spell:remove()
+            self.interruptable_spells[spell_id] = nil
+        end
+    end)
 end
 
 function big_brute_teleport(character, is_attacking)
@@ -121,7 +148,7 @@ function big_brute_teleport(character, is_attacking)
         debug_print('action end func')
         local departure_tile = character:get_current_tile()
         spawn_visual_artifact(departure_tile,character,teleport_texture,teleport_animation_path,teleport_action.teleport_size.."_TELEPORT_FROM",0,-character_info.height)
-        print('target tile '..target_tile:x()..' '..target_tile:y())
+        debug_print('target tile '..target_tile:x()..' '..target_tile:y())
         character:teleport(target_tile, ActionOrder.Immediate)
     end
     character:card_action_event(teleport_action, ActionOrder.Immediate)
@@ -174,6 +201,9 @@ function action_teleport(character, target_tile)
         local step2 = Battle.Step.new()
         local actor = self:get_actor()
 
+        --add a reference to this function to indicate that it can be canceled
+        character.interruptable_action = action
+
         action.pre_teleport_ms = 32/1000
         action.elapsed = 0
         action.arrival_artifact_created = false
@@ -189,6 +219,7 @@ function action_teleport(character, target_tile)
                 action.elapsed = action.elapsed + dt
                 return
             end
+            character.interruptable_action = nil
             self:complete_step()
             debug_print('action ' .. action_name .. ' step 1 complete')
         end
@@ -209,6 +240,8 @@ function action_beast_breath(character)
         local step1 = Battle.Step.new()
         local step2 = Battle.Step.new()
 
+        --add a reference to this function to indicate that it can be canceled
+        character.interruptable_action = action
         local actor = self:get_actor()
         action.pre_attack_anim_started = false
         action.attack_anim_started = false
@@ -216,6 +249,9 @@ function action_beast_breath(character)
         action.pre_attack_time = 0.7
         action.attack_time_counter = 0
         action.attack_time = 1.0
+        action.pre_attack_counter_time = 0.2
+        action.counter_enabled = false
+
 
         step1.update_func = function(self, dt)
             -- debug_print('action '..action_name..' step 1')
@@ -229,24 +265,29 @@ function action_beast_breath(character)
                 local t2 = actor:get_tile(direction, 2)
                 local t3 = actor:get_tile(direction, 3)
                 if t1 then
-                    fire_tower_spell(actor, 50, 0.5, action.pre_attack_time, t1:x(), t1:y())
+                    fire_tower_spell(character, 50, 0.5, action.pre_attack_time, t1:x(), t1:y())
                 end
                 if t2 then
                     local x = t2:x()
                     local y = t2:y()
-                    fire_tower_spell(actor, 50, 0.5, action.pre_attack_time, x, y - 1)
-                    fire_tower_spell(actor, 50, 0.5, action.pre_attack_time, x, y)
-                    fire_tower_spell(actor, 50, 0.5, action.pre_attack_time, x, y + 1)
+                    fire_tower_spell(character, 50, 0.5, action.pre_attack_time, x, y - 1)
+                    fire_tower_spell(character, 50, 0.5, action.pre_attack_time, x, y)
+                    fire_tower_spell(character, 50, 0.5, action.pre_attack_time, x, y + 1)
                 end
                 if t3 then
-                    fire_tower_spell(actor, 50, 0.5, action.pre_attack_time, t3:x(), t3:y())
+                    fire_tower_spell(character, 50, 0.5, action.pre_attack_time, t3:x(), t3:y())
                 end
 
             end
             if action.pre_attack_time_counter < action.pre_attack_time then
-                action.pre_attack_time_counter =
-                    action.pre_attack_time_counter + dt
+                action.pre_attack_time_counter = action.pre_attack_time_counter + dt
+                if action.pre_attack_time_counter <= action.pre_attack_time - action.pre_attack_counter_time and not action.counter_enabled then
+                    actor:toggle_counter(true)
+                end
             else
+                Engine.play_audio(fire_tower_sound, AudioPriority.Highest)
+                actor:toggle_counter(false)
+                character.interruptable_action = nil
                 self:complete_step()
             end
         end
@@ -297,7 +338,7 @@ function fire_tower_spell(user, damage, duration, warning_duration, x, y)
     spell.attack_func = function(self, other)
         local tile = self:get_current_tile()
         --TODO replace this with volcano effect (gotta make the animation)
-        spawn_visual_artifact(tile,self,teleport_texture,teleport_animation_path,"BIG_TELEPORT_FROM",0,40)
+        spawn_visual_artifact(tile,self,impacts_texture,impacts_animation_path,"VOLCANO",0,0)
     end
 
     spell.update_func = function(self, delta_time)
@@ -310,6 +351,8 @@ function fire_tower_spell(user, damage, duration, warning_duration, x, y)
         if self.state_changed then
             local anim = self:get_animation()
             if self.current_state == 2 then
+                --Spell can no longer be interrupted
+                user.interruptable_spells[spell.user_spell_id] = nil
                 spell:sprite():show()
                 anim:set_state("START")
                 anim:set_playback(Playback.Once)
@@ -353,4 +396,11 @@ function fire_tower_spell(user, damage, duration, warning_duration, x, y)
 
     field:spawn(spell, x, y)
     -- use direct hit / back of field animation
+
+    --Add spell to list of spells that can be interrupted and removed on flinch
+    debug_print('next spell id='..user.next_spell_id)
+    user.interruptable_spells[user.next_spell_id] = spell
+    spell.user_spell_id = user.next_spell_id
+    user.next_spell_id = user.next_spell_id + 1
+    return spell
 end
