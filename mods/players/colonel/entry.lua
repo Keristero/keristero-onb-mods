@@ -1,10 +1,18 @@
 local texture = nil
-
 local battle_animation_path = nil
 local sfx_charge_buster = nil
 local sfx_cannon = nil
-local buster_damage = 5
-local charge_buster_damage = 50
+player_info = {
+    name="Colonel",
+    author="keristero",
+    description="Tall cloaked dude",
+    buster_damage=5,
+    charge_buster_damage=50,
+    speed=2,
+    hp=1000,
+    element=Element.Sword,
+    height=55
+}
 
 function package_init(package) 
     battle_animation_path = _modpath.."battle.animation"
@@ -12,11 +20,11 @@ function package_init(package)
     sfx_buster_path = _modpath.."charge_buster.ogg"
     sfx_cannon_path = _modpath.."cannon.ogg"
 
-    package:declare_package_id("com.example.player.Colonel")
-    package:set_special_description("Tall cloaked dude!")
-    package:set_speed(2.0)
-    package:set_attack(buster_damage)
-    package:set_charged_attack(charge_buster_damage)
+    package:declare_package_id("com."..player_info.author..".player."..player_info.name)
+    package:set_special_description(player_info.description)
+    package:set_speed(player_info.speed)
+    package:set_attack(player_info.buster_damage)
+    package:set_charged_attack(player_info.charge_buster_damage)
     package:set_icon_texture(Engine.load_texture(_modpath.."pet.png"))
     package:set_preview_texture(Engine.load_texture(_modpath.."preview.png"))
     package:set_overworld_animation_path(_modpath.."overworld.animation")
@@ -29,10 +37,10 @@ function package_init(package)
 end
 
 function player_init(player)
-    player:set_name("Colonel")
-    player:set_health(1000)
-    player:set_element(Element.Sword)
-    player:set_height(55.0)
+    player:set_name(player_info.name)
+    player:set_health(player_info.hp)
+    player:set_element(player_info.element)
+    player:set_height(player_info.height)
     player:set_animation(battle_animation_path)
     texture = Engine.load_texture(battle_texture_path)
     player:set_texture(texture, true)
@@ -45,7 +53,7 @@ end
 
 function create_normal_attack(player)
     print("buster attack")
-    return Battle.Buster.new(player, false, buster_damage)
+    return Battle.Buster.new(player, false, player_info.buster_damage)
 end
 
 function create_charged_attack(player)
@@ -217,7 +225,7 @@ function spawn_cross_divide_slash(user, x, y, direction)
     spell:highlight_tile(Highlight.Flash)
     spell:set_hit_props(
         make_hit_props(
-            charge_buster_damage, 
+            player_info.charge_buster_damage, 
             Hit.Impact | Hit.Flinch, 
             Element.Sword, 
             user:get_id(), 
