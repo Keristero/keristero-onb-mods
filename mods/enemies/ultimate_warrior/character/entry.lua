@@ -1,14 +1,12 @@
 
 local character_info = {
     name = "RickAstley",
-    hp = 499,
+    hp = 1337,
     height = 120
 }
 
-enraged = false
-
 function debug_print(text)
-    print("[RickAstley] "..text)
+    --print("[RickAstley] "..text)
 end
 
 function package_init(self)
@@ -25,6 +23,10 @@ function package_init(self)
     fire_tower_texture_path = _modpath.."firetower.png"
     fire_tower_texture = Engine.load_texture(fire_tower_texture_path)
     fire_tower_sound = Engine.load_audio(_modpath.."firetower.ogg")
+
+    say_goodbye_sound = Engine.load_audio(_modpath.."special1.ogg")
+    tell_you_how_im_feeling_sound = Engine.load_audio(_modpath.."enrage.ogg")
+    deathcry_sound = Engine.load_audio(_modpath.."deathcry.ogg")
 
     impacts_animation_path = _modpath .. "impacts.animation"
     impacts_texture_path = _modpath .. "impacts.png"
@@ -45,19 +47,22 @@ function package_init(self)
     self.ai_state = "spawning"
     self.ai_timer = 0
     self.ai_jumps = 0
-    self.combo_length = 0
     self.ai_target_jumps = math.random(2,3)
     self.frames_between_jumps = 10
     self.frames_before_attack_start = 2
+    self.seconds_since_attack_landed = 2
+    self.combo_length = 0
     
-    enraged = false
+    self.enraged = false
 
     self.update_func = function (self,dt)
         local character = self
         local character_facing = character:get_facing()
-        if character:get_health() < 500 then
-            enraged = true
+        if character.enraged then
+            character:set_color(Color.new( 255, 0, 0, 255 ) )
         end
+        character.seconds_since_attack_landed = character.seconds_since_attack_landed + dt 
+        debug_print(character.seconds_since_attack_landed)
         character.ai_timer = character.ai_timer + 1
         --debug_print("original update_func called: "..character.ai_state)
         if character.ai_state == "idle" then
@@ -79,17 +84,22 @@ function package_init(self)
                 character.ai_state = "attacking"
                 action.action_end_func = function ()
                     character.ai_timer = 0
-                    if enraged and character.combo_length < 3 then
+                    if character.enraged and character.combo_length <= 3 then
                         character.ai_state = "preparing_attack"
                         character.combo_length = character.combo_length + 1
                     else
                         character.combo_length = 0
                         character.ai_state = "idle"
                         character.ai_jumps = 0
-                        self.ai_target_jumps = math.random(4,5)
+                        self.ai_target_jumps = math.random(4,8)
                     end
                 end
             end
+        end
+        if character.ai_state == "attacking" and character.ai_timer > 300 then
+            debug_print("character was stuck attacking, forced back to idle (action interruptions are not being handled correctly)")
+            character.ai_state = "idle"
+            character.ai_timer = 0
         end
     end
     self.battle_start_func = function (self)
@@ -117,7 +127,13 @@ function package_init(self)
     end
     self.delete_func = function (self)
         debug_print("delete_func called")
+        Engine.play_audio(deathcry_sound, AudioPriority.Highest)
     end
+    self.interrupted_callback = function()
+        debug_print("interrupted_callback called")
+        self.ai_state = "idle"
+    end
+    self.register_status_callback(Hit.Freeze | Hit.Flinch | Hit.Stun | Hit.Drag | Hit.Bubble,self.interrupted_callback)
 end
 
 
@@ -163,9 +179,217 @@ function big_brute_teleport(character,moving_to_attack_position)
 end
 
 function action_random_attack(character)
-    local attack_actions = {action_fire_tower_line,action_fire_tower_random}
+    local attack_actions = {action_fire_tower_random}
+    local field = character:get_field()
+    if not character.enraged then
+        attack_actions[#attack_actions+1] = action_fire_tower_line
+    end
+
+    if character.seconds_since_attack_landed > 2 then
+        --Try doing enrage attack if we have not already and we are blelow hp threshhold
+        if character:get_health() < 500 and not character.enraged then
+            attack_actions[#attack_actions+1] = action_enrage
+        end
+        --Try adding execute attack to the pool of attacks, if there is an applicible target
+        local found_target = false
+        local targets = field:find_nearest_characters(character,function(other_character)
+            if not found_target and other_character:get_health() < 300 then
+                found_target = true
+                return true
+            end
+            return false
+        end)
+        if #targets > 0 then
+            attack_actions[#attack_actions+1] = action_say_goodbye
+        end
+    end
+
     local chosen_one = attack_actions[math.random(#attack_actions)]
     return chosen_one(character)
+end
+
+function action_say_goodbye(character)
+    local action_name = "say_goodbye"
+    debug_print('action ' .. action_name)
+
+    local action = Battle.CardAction.new(character, "ATTACK")
+    action:set_lockout(make_sequence_lockout())
+    local card_props = action:copy_metadata()
+    card_props.shortname = "Never gonna"
+    card_props.damage = 300
+    card_props.time_freeze = true
+    card_props.element = Element.Summon
+    card_props.description = "Say Goodbye!"
+	card_props.card_class = CardClass.Mega
+    action:set_metadata(card_props)
+
+    local field = character:get_field()
+
+    local target_tiles = {}
+    for x = 0, field:width(), 1 do
+        for y = 0, field:height(), 1 do
+            local t1 = field:tile_at(x,y)
+            if t1 then
+                target_tiles[#target_tiles+1] = t1
+            end
+        end
+    end
+
+    action.execute_func = function(self)
+        debug_print('executing action ' .. action_name)
+        local step1 = Battle.Step.new()
+        local step2 = Battle.Step.new()
+
+        --add a reference to this function to indicate that it can be canceled
+        local actor = self:get_actor()
+        debug_print('got actor')
+        action.pre_attack_anim_started = false
+        action.attack_anim_started = false
+        action.pre_attack_time_counter = 0
+        action.pre_attack_time = 1
+        action.attack_time_counter = 0
+        action.attack_time = 0.5
+        action.pre_attack_counter_time = 0.1
+        action.counter_enabled = false
+
+        action.warning_toggle_frames = 4
+        action.warning_toggle = false
+        action.warning_toggle_frames_elapsed = 0
+        action.target_tiles = target_tiles
+
+
+        debug_print('setup actor')
+        step1.update_func = function(self, dt)
+            -- debug_print('action '..action_name..' step 1')
+            if not action.pre_attack_anim_started then
+                Engine.play_audio(say_goodbye_sound, AudioPriority.Highest)
+                debug_print('pre attack start')
+                local anim = actor:get_animation()
+                anim:set_state("ATTACK")
+                anim:set_playback(Playback.Once)
+                action.pre_attack_anim_started = true
+            end
+            if action.pre_attack_time_counter < action.pre_attack_time then
+                debug_print('pre attack time ticking')
+                action.pre_attack_time_counter = action.pre_attack_time_counter + dt
+
+                --flash target tiles
+                for index, target_tile in ipairs(action.target_tiles) do
+                    if action.warning_toggle then
+                        target_tile:highlight(Highlight.Solid)
+                    end
+                end
+                --cycle flashing
+                action.warning_toggle_frames_elapsed = action.warning_toggle_frames_elapsed + 1
+                if action.warning_toggle_frames_elapsed >= action.warning_toggle_frames then
+                    action.warning_toggle_frames_elapsed = 0
+                    action.warning_toggle = not action.warning_toggle
+                end
+            else
+                self:complete_step()
+            end
+        end
+
+        step2.update_func = function(self, dt)
+            -- debug_print('action '..action_name..' step 2')
+            if not action.attack_anim_started then
+                action.attack_anim_started = true
+                Engine.play_audio(fire_tower_sound, AudioPriority.Highest)
+                character:shake_camera( 2.0, 1.0 )
+
+                --Do attacking
+                for index, target_tile in ipairs(action.target_tiles) do
+                    fire_tower_spell(actor, card_props.damage, 1, target_tile:x(), target_tile:y())
+                end
+            end
+            if action.attack_time_counter < action.attack_time then
+                action.attack_time_counter = action.attack_time_counter + dt
+            else
+                debug_print('action ' .. action_name .. ' step 2 complete')
+                local anim = actor:get_animation()
+                anim:set_state("IDLE")
+                anim:set_playback(Playback.Loop)
+                self:complete_step()
+            end
+        end
+
+        self:add_step(step1)
+        self:add_step(step2)
+    end
+    return action
+end
+
+function action_enrage(character)
+    local action_name = "enrage"
+    debug_print('action ' .. action_name)
+
+    local field = character:get_field()
+    local target_tiles = {}
+    target_tiles[#target_tiles+1] = field:tile_at(1,1)
+    target_tiles[#target_tiles+1] = field:tile_at(3,1)
+    target_tiles[#target_tiles+1] = field:tile_at(1,3)
+    target_tiles[#target_tiles+1] = field:tile_at(3,3)
+    local new_tile_state = TileState.Volcano
+    local action = action_set_tile_states(character,target_tiles,new_tile_state)
+
+    local card_props = action:copy_metadata()
+    card_props.shortname = "..!"
+    card_props.damage = 0
+    card_props.time_freeze = true
+    card_props.element = Element.Summon
+    card_props.description = "How I'm Feelin"
+	card_props.card_class = CardClass.Mega
+    action:set_metadata(card_props)
+
+    return action
+end
+
+function action_set_tile_states(character,target_tiles,target_state)
+    local action_name = "action_set_tile_states"
+    debug_print('action ' .. action_name)
+
+    local action = Battle.CardAction.new(character, "")
+    action:set_lockout(make_sequence_lockout())
+    action.target_tiles = target_tiles
+    action.target_state = target_state
+    action.start_delay_seconds = 4
+    action.highlight_time = 0.1
+
+    action.execute_func = function(self)
+        debug_print('executing action ' .. action_name)
+        local step1 = Battle.Step.new()
+        local step2 = Battle.Step.new()
+
+        --add a reference to this function to indicate that it can be canceled
+        local actor = self:get_actor()
+        Engine.play_audio(tell_you_how_im_feeling_sound, AudioPriority.Highest)
+        character.enraged = true
+        
+
+        step1.update_func = function(self, dt)
+            debug_print('action '..action_name..' step 1')
+            if action.start_delay_seconds > 0 then
+                action.start_delay_seconds = action.start_delay_seconds - dt
+                if action.start_delay_seconds <= action.highlight_time then
+                    for index, target_tile in ipairs(action.target_tiles) do
+                        target_tile:highlight(Highlight.Solid)
+                    end
+                end
+                return
+            end
+            self:complete_step()
+        end
+        step2.update_func = function(self, dt)
+            debug_print('action '..action_name..' step 2')
+            for index, target_tile in ipairs(action.target_tiles) do
+                target_tile:set_state(action.target_state)
+            end
+            self:complete_step()
+        end
+        self:add_step(step1)
+        self:add_step(step2)
+    end
+    return action
 end
 
 function action_fire_tower_line(character)
@@ -177,7 +401,11 @@ function action_fire_tower_line(character)
             target_tiles[#target_tiles+1] = t1
         end
     end
-    local attack_action = action_fire_tower_target_tiles(character,target_tiles,200)
+    fire_tower_delay = 0.5
+    if character.enraged then
+        fire_tower_delay = 0.4
+    end
+    local attack_action = action_fire_tower_target_tiles(character,target_tiles,200,fire_tower_delay)
     return attack_action
 end
 
@@ -196,11 +424,15 @@ function action_fire_tower_random(character)
             end
         end
     end
-    local attack_action = action_fire_tower_target_tiles(character,target_tiles,200)
+    local fire_tower_delay = 0.5
+    if character.enraged then
+        fire_tower_delay = 0.4
+    end
+    local attack_action = action_fire_tower_target_tiles(character,target_tiles,200,fire_tower_delay)
     return attack_action
 end
 
-function action_fire_tower_target_tiles(character,target_tiles,damage)
+function action_fire_tower_target_tiles(character,target_tiles,damage,tower_delay)
     local action_name = "fire_tower_target_tiles"
     debug_print('action ' .. action_name)
 
@@ -214,10 +446,9 @@ function action_fire_tower_target_tiles(character,target_tiles,damage)
 
         --add a reference to this function to indicate that it can be canceled
         local actor = self:get_actor()
-        action.pre_attack_anim_started = false
         action.attack_anim_started = false
         action.pre_attack_time_counter = 0
-        action.pre_attack_time = 0.5
+        action.pre_attack_time = tower_delay
         action.attack_time_counter = 0
         action.attack_time = 0.5
         action.pre_attack_counter_time = 0.1
@@ -228,14 +459,12 @@ function action_fire_tower_target_tiles(character,target_tiles,damage)
         action.warning_toggle_frames_elapsed = 0
         action.target_tiles = target_tiles
 
+        local anim = actor:get_animation()
+        anim:set_state("ATTACK")
+        anim:set_playback(Playback.Once)
+
         step1.update_func = function(self, dt)
             -- debug_print('action '..action_name..' step 1')
-            if not action.pre_attack_anim_started then
-                local anim = actor:get_animation()
-                anim:set_state("ATTACK")
-                anim:set_playback(Playback.Once)
-                action.pre_attack_anim_started = true
-            end
             if action.pre_attack_time_counter < action.pre_attack_time then
                 action.pre_attack_time_counter = action.pre_attack_time_counter + dt
 
@@ -277,7 +506,6 @@ function action_fire_tower_target_tiles(character,target_tiles,damage)
                 action.attack_time_counter = action.attack_time_counter + dt
             else
                 debug_print('action ' .. action_name .. ' step 2 complete')
-                local anim = actor:get_animation()
                 anim:set_state("IDLE")
                 anim:set_playback(Playback.Loop)
                 self:complete_step()
@@ -325,6 +553,10 @@ function fire_tower_spell(user, damage, duration, x, y)
         local tile = self:get_current_tile()
         --TODO replace this with volcano effect (gotta make the animation)
         spawn_visual_artifact(tile,self,impacts_texture,impacts_animation_path,"VOLCANO",0,0)
+        if user.seconds_since_attack_landed then
+            --update this value for ai logic if it exists
+            user.seconds_since_attack_landed = 0
+        end
     end
 
     spell.update_func = function(self, delta_time)
