@@ -1,0 +1,23 @@
+animation state="IDLE"
+frame duration="0.1" x="29" y="0" w="25" h="36" originx="12" originy="34"
+frame duration="0.2" x="54" y="0" w="25" h="36" originx="12" originy="34"
+frame duration="0.1" x="3" y="38" w="25" h="36" originx="12" originy="34"
+frame duration="0.2" x="28" y="38" w="25" h="36" originx="12" originy="34"
+frame duration="0.1" x="53" y="38" w="25" h="36" originx="12" originy="34"
+frame duration="0.2" x="0" y="75" w="25" h="36" originx="12" originy="34"
+
+animation state="FALL"
+frame duration="0.2" x="50" y="75" w="25" h="31" originx="12" originy="29"
+frame duration="0.1" x="3" y="0" w="26" h="38" originx="13" originy="36"
+frame duration="0.1" x="25" y="75" w="25" h="35" originx="12" originy="33"
+
+animation state="RISE"
+frame duration="0.1" x="25" y="75" w="25" h="35" originx="12" originy="33"
+frame duration="0.1" x="3" y="0" w="26" h="38" originx="13" originy="36"
+frame duration="0.2" x="50" y="75" w="25" h="31" originx="12" originy="29"
+
+animation state="SHADOW"
+frame duration="0.1" x="75" y="75" w="18" h="11" originx="8" originy="4"
+
+animation state="ROPE"
+frame duration="0.1" x="0" y="0" w="3" h="75" originx="0" originy="74"

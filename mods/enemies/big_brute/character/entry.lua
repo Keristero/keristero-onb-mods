@@ -37,7 +37,7 @@ function package_init(self)
     self:set_height(character_info.height)
     self:share_tile(false)
     self:set_explosion_behavior(4, 1.0, false)
-    self:set_position(0, 0)
+    self:set_offset(0, 0)
 
     --defense rules
     self.defense = Battle.DefenseVirusBody.new()
@@ -157,7 +157,7 @@ end
 
 function spawn_visual_artifact(tile,character,texture,animation_path,animation_state,position_x,position_y)
     local field = character:get_field()
-    local visual_artifact = Battle.Artifact.new(character:get_team())
+    local visual_artifact = Battle.Artifact.new()
     visual_artifact:set_texture(texture,true)
     local anim = visual_artifact:get_animation()
     anim:load(animation_path)
@@ -165,7 +165,7 @@ function spawn_visual_artifact(tile,character,texture,animation_path,animation_s
     anim:on_complete(function()
         visual_artifact:delete()
     end)
-    visual_artifact:sprite():set_position(position_x,position_y)
+    visual_artifact:sprite():set_offset(position_x,position_y)
     field:spawn(visual_artifact, tile:x(), tile:y())
 end
 
@@ -197,7 +197,7 @@ function action_teleport(character, target_tile)
         action.departure_artifact_created = false
 
         step1.update_func = function(self, dt)
-            debug_print('action ' .. action_name .. ' step 1 update')
+            -- debug_print('action ' .. action_name .. ' step 1 update')
             if not action.arrival_artifact_created then
                 spawn_visual_artifact(target_tile,character,teleport_texture,teleport_animation_path,action.teleport_size.."_TELEPORT_TO",0,-character_info.height)
                 action.arrival_artifact_created = true
@@ -207,7 +207,7 @@ function action_teleport(character, target_tile)
                 return
             end
             self:complete_step()
-            debug_print('action ' .. action_name .. ' step 1 complete')
+            -- debug_print('action ' .. action_name .. ' step 1 complete')
         end
         action:add_step(step1)
     end
@@ -243,7 +243,7 @@ function action_beast_breath(character)
         action.target_tiles = {}
 
         step1.update_func = function(self, dt)
-            debug_print('pre attack update'.. action.pre_attack_time_counter)
+            -- debug_print('pre attack update'.. action.pre_attack_time_counter)
             -- debug_print('action '..action_name..' step 1')
             if not action.pre_attack_anim_started then
                 local anim = actor:get_animation()
@@ -333,9 +333,9 @@ function fire_tower_spell(user, damage, duration, x, y)
     end
     local spell = Battle.Spell.new(user:get_team())
     spell:set_texture(fire_tower_texture, true)
-    spell:set_hit_props(make_hit_props(damage, Hit.Impact | Hit.Flash | Hit.Flinch,
+    spell:set_hit_props(HitProps.new(damage, Hit.Impact | Hit.Flash | Hit.Flinch,
                                        Element.Fire, user:get_id(),
-                                       drag(Direction.Right, 0)))
+                                       Drag.None))
     spell.elapsed = 0
     spell.current_state = 1
     spell.state_changed = true
@@ -385,7 +385,7 @@ function fire_tower_spell(user, damage, duration, x, y)
                 end)
             end
             if self.current_state == 4 then
-                debug_print('spell complete')
+                -- debug_print('spell complete')
                 spell:delete()
             end
             self.state_changed = false
