@@ -24,7 +24,7 @@ function package_init(self)
     self:set_height(30)
     self:share_tile(false)
     self:set_explosion_behavior(2, 1.0, false)
-    self:set_position(0, 0)
+    self:set_offset(0, 0)
 
     --Initial state
     self.animation:set_state("IDLE")
@@ -35,15 +35,15 @@ function package_init(self)
     self.update_func = function (self,dt)
         local character = self
         local character_facing = character:get_facing()
-        debug_print("original update_func called: "..character.ai_state)
+        --debug_print("original update_func called: "..character.ai_state)
         if character.ai_state == "idle" then
             local enemy_tile = target_first_enemy_tile(character,character_facing,false)
             if enemy_tile == nil then
-                debug_print('no target...')
+                --debug_print('no target...')
                 return
             end
             debug_print('aha, a target...')
-            local reverse_dir = reverse_dir(character_facing)
+            local reverse_dir = Direction.reverse(character_facing)
             debug_print('reverse dir = '..reverse_dir)
             local target_tile = enemy_tile:get_tile(reverse_dir,1)
             local action = vanishing_teleport_action(character,target_tile)

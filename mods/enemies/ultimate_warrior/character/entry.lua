@@ -39,7 +39,7 @@ function package_init(self)
     self:set_height(character_info.height)
     self:share_tile(false)
     self:set_explosion_behavior(32, 1.0, false)
-    self:set_position(0, 0)
+    self:set_offset(0, 0)
 
     --Initial state
     self.animation:set_state("IDLE")
@@ -528,7 +528,7 @@ function spawn_visual_artifact(tile,character,texture,animation_path,animation_s
     anim:on_complete(function()
         visual_artifact:delete()
     end)
-    visual_artifact:sprite():set_position(position_x,position_y)
+    visual_artifact:sprite():set_offset(position_x,position_y)
     field:spawn(visual_artifact, tile:x(), tile:y())
 end
 
@@ -540,9 +540,9 @@ function fire_tower_spell(user, damage, duration, x, y)
     end
     local spell = Battle.Spell.new(user:get_team())
     spell:set_texture(fire_tower_texture, true)
-    spell:set_hit_props(make_hit_props(damage, Hit.Impact | Hit.Flash | Hit.Flinch,
-                                       Element.Fire, user:get_id(),
-                                       drag(Direction.Right, 0)))
+    spell:set_hit_props(HitProps.new(damage, Hit.Impact | Hit.Flash | Hit.Flinch,
+                                       Element.Fire, user:get_context(),
+                                       Drag.None))
     spell.elapsed = 0
     spell.current_state = 1
     spell.state_changed = true
