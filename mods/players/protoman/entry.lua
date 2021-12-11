@@ -11,8 +11,8 @@ player_info = {
     author="keristero",
     description="Red version of Blues",
     buster_damage=5,
-    charge_buster_damage=80,
-    speed=3,
+    charge_buster_damage=100,
+    speed=4,
     hp=1000,
     element=Element.Sword,
     height=40,
@@ -57,7 +57,7 @@ end
 
 function create_normal_attack(player)
     print("buster attack")
-    return Battle.Buster.new(player, false, player_info.buster_damage)
+    return Battle.Buster.new(player, false, player:get_attack_level())
 end
 
 function create_special_attack(player)
@@ -67,7 +67,7 @@ function create_special_attack(player)
     stub_action:set_lockout(make_animation_lockout())
     stub_action.execute_func = function(self, character)
         local reflect_action = Engine.action_from_card("com.keristero.card.protoreflect",character)
-        reflect_action.damage = player_info.charge_buster_damage
+        reflect_action.damage = 30+player:get_attack_level()*20
         character:card_action_event(reflect_action, ActionOrder.Immediate)
     end
     return stub_action
@@ -80,7 +80,7 @@ function create_charged_attack(player)
     stub_action:set_lockout(make_async_lockout(0.1))
     stub_action.execute_func = function(self, character)
         local sword_action = Engine.action_from_card("com.keristero.card.protosword",character)
-        sword_action.damage = player_info.charge_buster_damage
+        sword_action.damage = 50+(player:get_attack_level()*10)
         character:card_action_event(sword_action, ActionOrder.Immediate)
     end
     return stub_action
