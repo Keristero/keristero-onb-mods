@@ -47,6 +47,7 @@ function player_init(player)
     player:set_fully_charged_color(Color.new(255,0,0,255))
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
+    player.special_attack_func = create_special_attack
 
     player.update_func = function(self, dt) 
         -- nothing in particular
@@ -132,12 +133,12 @@ function spawn_tank_cannon_shell(user, x, y, direction)
     spell:set_texture(texture, true)
     spell:highlight_tile(Highlight.Flash)
     spell:set_hit_props(
-        make_hit_props(
+        HitProps.new(
             120, 
             Hit.Impact | Hit.Flinch | Hit.Drag, 
             Element.None, 
             user:get_id(), 
-            drag(Direction.Right, 3)
+            Drag.None
         )
     )
 
@@ -147,7 +148,7 @@ function spawn_tank_cannon_shell(user, x, y, direction)
     anim:load(battle_animation_path)
     if (x == 0 or x == field:width()) then
         anim:set_state("COLONEL_CANNON_BACK")
-        spell:set_position(35,0)
+        spell:set_offset(35,0)
     else
         anim:set_state("COLONEL_CANNON_DIRECT")
     end
@@ -226,12 +227,12 @@ function spawn_cross_divide_slash(user, x, y, direction)
     spell:set_texture(texture, true)
     spell:highlight_tile(Highlight.Flash)
     spell:set_hit_props(
-        make_hit_props(
+        HitProps.new(
             player_info.charge_buster_damage, 
             Hit.Impact | Hit.Flinch, 
             Element.Sword, 
             user:get_id(), 
-            drag(Direction.Right, 1)
+            Drag.None
         )
     )
 
