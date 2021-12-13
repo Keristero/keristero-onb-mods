@@ -1,5 +1,11 @@
--- Based on Konst's mettaur player code
 nonce = function() end
+
+local debug = true
+function debug_print(text)
+    if debug then
+        print("[guard] " .. text)
+    end
+end
 
 local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
 local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
@@ -7,27 +13,27 @@ local shield_texture = Engine.load_texture(_modpath .. "protoshield.png")
 local sheild_animation_path = _modpath .. "protoshield.animation"
 local tink_sfx = Engine.load_audio(_modpath .. "tink.ogg")
 
-local DAMAGE = 50 --should be overriden by caller with action.damage
-
 function package_init(package)
-    package:declare_package_id("com.keristero.card.protoreflect")
-    package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
-    package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
-    package:set_codes({'*'})
-
     local props = package:get_card_props()
-    props.shortname = "ProtoReflc"
-    props.damage = DAMAGE
+    --standard properties
+    props.shortname = "Guard1"
+    props.damage = 50
     props.time_freeze = false
-    props.element = Element.Sword
-    props.description = "Protoman reflect"
+    props.element = Element.None
+    props.description = "Repels an enemys attack"
+    --special properties
+    props.guard_animation = "GUARD1"
+
+    package:declare_package_id("com.keristero.card."..props.shortname)
+    package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
+    package:set_preview_texture(Engine.load_texture(_modpath .. "preview_"..props.shortname..".png"))
+    package:set_codes({'A',"D","K","*"})
 end
 
 function card_create_action(actor, props)
-    print("in create_card_action()!")
+    debug_print("in create_card_action()!")
 
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
-	action.damage = DAMAGE
 	--protoman's counter in BN5 lasts 24 frames (384ms)
 	--there are 224ms of the shield fading away where protoman can move
 	local guarding_duration = 0.384
@@ -39,38 +45,40 @@ function card_create_action(actor, props)
 
     action.execute_func = function(self, user, props)
 		local guarding = false
+        local guard_attachment = self:add_attachment("BUSTER")
+        local guard_sprite = guard_attachment:sprite()
+        guard_sprite:set_texture(shield_texture)
+        guard_sprite:set_layer(-2)
+        guard_sprite:enable_parent_shader(true)
+
+        local guard_animation = guard_attachment:get_animation()
+        guard_animation:load(sheild_animation_path)
+        guard_animation:set_state(props.guard_animation)
 
 		self:add_anim_action(1,function()
 			guarding = true
-			local shield = self:add_attachment("BUSTER")
-			local shield_sprite = shield:sprite()
-			shield_sprite:set_texture(shield_texture)
-			shield_sprite:set_layer(-2)
-			shield_sprite:enable_parent_shader(true)
-			local sheild_animation = shield:get_animation()
-			sheild_animation:load(sheild_animation_path)
-			sheild_animation:set_state("IDLE")
 		end)
 		self:add_anim_action(2,function()
+			guard_animation:set_state("FADE")
 			guarding = false
 		end)
 
-        local hiding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
-        hiding_defense_rule.can_block_func = function(judge, attacker, defender)
+        local guarding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
+        guarding_defense_rule.can_block_func = function(judge, attacker, defender)
                 if not guarding then 
 					return 
 				end
-
                 judge:block_impact()
 
                 if attacker:copy_hit_props().damage > 0 then
                     judge:block_damage()
                     Engine.play_audio(tink_sfx, AudioPriority.Highest)
+                    local reflected_damage = props.damage
                     local direction = actor:get_facing()
-                    spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,action.damage, wave_texture,wave_sfx)
+                    spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx)
                 end
             end
-        actor:add_defense_rule(hiding_defense_rule)
+        actor:add_defense_rule(guarding_defense_rule)
     end
 
     return action

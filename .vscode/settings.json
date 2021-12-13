@@ -10,7 +10,6 @@
         "Element",
         "Color",
         "make_animation_lockout",
-        "make_hit_props",
         "drag",
         "Direction",
         "ActionOrder",
@@ -20,8 +19,11 @@
         "make_sequence_lockout",
         "Rank",
         "Lifetimes",
-        "reverse_dir",
-        "ParticleType"
+        "ParticleType",
+        "make_frame_data",
+        "make_async_lockout",
+        "HitProps",
+        "Drag"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"
