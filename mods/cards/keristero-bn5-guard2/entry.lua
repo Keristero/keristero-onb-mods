@@ -15,7 +15,7 @@ function package_init(package)
     local props = package:get_card_props()
     --standard properties
     props.shortname = "Guard2"
-    props.damage = 1
+    props.damage = 100
     props.time_freeze = false
     props.element = Element.None
     props.description = "Repels an enemys attack"
