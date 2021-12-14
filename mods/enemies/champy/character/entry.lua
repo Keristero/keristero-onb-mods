@@ -5,7 +5,8 @@ local enemy_info = {
 }
 
 function debug_print(text)
-    print("[champy] "..text)
+    -- uncomment below to debug:
+    -- print("[champy] "..text)
 end
 
 function package_init(self)
@@ -121,6 +122,7 @@ function target_first_enemy_tile(user,direction,can_hit_back_column)
 end
 
 function start_hide(character, target_tile, seconds, callback)
+    teleport_effect_artifact(character:get_field(), character:get_current_tile())
     local c = Battle.Component.new(character, Lifetimes.Battlestep)
     c.duration = seconds
     c.start_tile = character:get_current_tile()
@@ -134,9 +136,9 @@ function start_hide(character, target_tile, seconds, callback)
         if self.duration <= 0 then
             local id = self:get_owner():get_id()
             debug_print("adding entity "..id)
-            self.target_tile:add_entity(self:get_owner())
+
             if callback then
-                callback()
+                callback(self:get_owner(), self.target_tile)
             end
             self:eject()
         end
@@ -181,7 +183,14 @@ function vanishing_teleport_action(user,target_tile)
         --local particle_impact = Battle.ParticleImpact.new(ParticleType.Fire)
         --field:spawn(particle_impact,start_tile:x(),start_tile:y())
 
+        local step1_done = false
+        local step2_done = false
+
         step1.update_func = function(self, dt)
+            if step1_done then 
+                self:complete_step()
+            end
+
             if done_teleport then
                 return
             end
@@ -189,14 +198,23 @@ function vanishing_teleport_action(user,target_tile)
             --reserve the start tile for when the champy returns
             local start_tile = user:get_current_tile()
             start_tile:reserve_entity_by_id(user:get_id())
-            hide_component = start_hide(user,target_tile,0.448,function ()
-                print("Finished hiding!")
-                self:complete_step()
-            end)
+            hide_component = start_hide(user,target_tile,0.448,
+                function (owner, tile)
+                    tile:add_entity(owner)
+                    teleport_effect_artifact(owner:get_field(), tile)
+                    fire_burst(owner, tile, 30)
+                    print("Finished hiding!")
+                    step1_done = true
+                end
+            )
             done_teleport = true
         end
 
         step2.update_func = function(self, dt)
+            if step2_done then
+                self:complete_step()
+            end
+
             if done_punch then
                 return
             end
@@ -218,7 +236,7 @@ function vanishing_teleport_action(user,target_tile)
                 local idle_anim = actor:get_animation()
                 idle_anim:set_state("IDLE")
                 idle_anim:set_playback(Playback.Loop)
-                self:complete_step()
+                step2_done = true
             end)
             done_punch = true
         end
@@ -234,8 +252,10 @@ function vanishing_teleport_action(user,target_tile)
 
         step4.update_func = function(self, dt)
             debug_print("vanishing teleport STEP 4")
+            teleport_effect_artifact(user:get_field(), user:get_current_tile())
             local did_teleport = user:teleport(start_tile,ActionOrder.Involuntary)
             if did_teleport then
+                teleport_effect_artifact(user:get_field(), start_tile)
                 self:complete_step()
             end
         end
@@ -255,12 +275,12 @@ function fire_burst(user,target_tile,damage)
     --spell:set_texture(texture, true)
     spell:highlight_tile(Highlight.Flash)
     spell:set_hit_props(
-        make_hit_props(
+        HitProps.new(
             damage, 
             Hit.Impact | Hit.Flinch, 
             Element.Fire, 
-            user:get_id(), 
-            drag(Direction.Right, 0)
+            user:get_context(), 
+            Drag.None
         )
     )
 
@@ -285,6 +305,18 @@ function fire_burst(user,target_tile,damage)
     user:get_field():spawn(spell, target_tile:x(), target_tile:y())
 end
 
-function teleport_effect_artifact(tile,is_appearing)
+function teleport_effect_artifact(field, tile)
+    local fx = Battle.Artifact.new()
+    fx:set_texture(Engine.load_texture(_modpath.."teleport_effect.png"), true)
+    
+    local anim = fx:get_animation()
+    anim:load(_modpath.."teleport.animation")
+    anim:set_state("TELEPORT_EFFECT")
+    anim:set_playback(Playback.Once)
+    anim:on_complete(function ()
+        fx:erase()
+    end)
+    anim:refresh(fx:sprite())
 
+    field:spawn(fx, tile)
 end
