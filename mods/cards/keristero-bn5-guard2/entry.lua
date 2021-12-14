@@ -30,7 +30,6 @@ function card_create_action(actor, props)
     debug_print("in create_card_action()!")
 
     local reflect_action = Battle.CardAction.from_card("com.keristero.card.Guard1",actor,props)
-    --reflect_action:set_metadata(props)
     reflect_action.guard_animation = "GUARD2"
     return reflect_action
     --special properties

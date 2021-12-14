@@ -79,7 +79,7 @@ function card_create_action(actor,props)
                 Engine.play_audio(tink_sfx, AudioPriority.Highest)
                 local reflected_damage = props.damage
                 local direction = actor:get_facing()
-                spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx)
+                spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
             end
         end
 
@@ -89,7 +89,7 @@ function card_create_action(actor,props)
     return action
 end
 
-function spawn_shockwave(owner_id, team, field, tile, direction,damage, wave_texture, wave_sfx)
+function spawn_shockwave(owner_id, team, field, tile, direction,damage, wave_texture, wave_sfx,frame_time)
     local spawn_next
     spawn_next = function()
         if not tile:is_walkable() then return end
@@ -107,7 +107,7 @@ function spawn_shockwave(owner_id, team, field, tile, direction,damage, wave_tex
         local animation = spell:get_animation()
         animation:load(_modpath .. "shockwave.animation")
         animation:set_state("DEFAULT")
-        animation:on_frame(4, function()
+        animation:on_frame(3, function()
             tile = tile:get_tile(direction, 1)
             spawn_next()
         end, true)
