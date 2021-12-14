@@ -3,7 +3,7 @@ local battle_animation_path = nil
 
 function package_requires()
     Engine.requires_card("com.keristero.card.protosword")
-    Engine.requires_card("com.keristero.card.protoreflect")
+    Engine.requires_card("com.keristero.card.Guard1")
 end
 
 player_info = {
@@ -15,7 +15,7 @@ player_info = {
     speed=4,
     hp=1000,
     element=Element.Sword,
-    height=40,
+    height=60,
     charge_buster_glow_y_offset=-20
 }
 
@@ -62,26 +62,17 @@ end
 
 function create_special_attack(player)
     print("execute special")
-    --Stub action is a temporary workaround to give us a scriptedcharacter instead of scriptedplayer
-    local stub_action = Battle.CardAction.new(player,"PLAYER_IDLE")
-    stub_action:set_lockout(make_animation_lockout())
-    stub_action.execute_func = function(self, character)
-        local reflect_action = Engine.action_from_card("com.keristero.card.protoreflect",character)
-        reflect_action.damage = 30+player:get_attack_level()*20
-        character:card_action_event(reflect_action, ActionOrder.Immediate)
-    end
-    return stub_action
+    local props = Battle.CardProperties.from_card("com.keristero.card.Guard1")
+    props.damage = 30+(player:get_attack_level()*10)
+    local reflect_action = Battle.CardAction.from_card("com.keristero.card.Guard1",player,props)
+    reflect_action.guard_animation = "PROTOGUARD"
+    return reflect_action
 end
 
 function create_charged_attack(player)
     print("charged attack")
-    --Stub action is a temporary workaround to give us a scriptedcharacter instead of scriptedplayer
-    local stub_action = Battle.CardAction.new(player,"PLAYER_IDLE")
-    stub_action:set_lockout(make_async_lockout(0.1))
-    stub_action.execute_func = function(self, character)
-        local sword_action = Engine.action_from_card("com.keristero.card.protosword",character)
-        sword_action.damage = 50+(player:get_attack_level()*10)
-        character:card_action_event(sword_action, ActionOrder.Immediate)
-    end
-    return stub_action
+    local props = Battle.CardProperties.from_card("com.keristero.card.protosword")
+    props.damage = 30+(player:get_attack_level()*20)
+    local sword_action = Battle.CardAction.from_card("com.keristero.card.protosword",player,props)
+    return sword_action
 end

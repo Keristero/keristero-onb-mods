@@ -9,8 +9,8 @@ end
 
 local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
 local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
-local shield_texture = Engine.load_texture(_modpath .. "protoshield.png")
-local sheild_animation_path = _modpath .. "protoshield.animation"
+local shield_texture = Engine.load_texture(_modpath .. "guard_attachment.png")
+local sheild_animation_path = _modpath .. "guard_attachment.animation"
 local tink_sfx = Engine.load_audio(_modpath .. "tink.ogg")
 
 function package_init(package)
@@ -21,8 +21,6 @@ function package_init(package)
     props.time_freeze = false
     props.element = Element.None
     props.description = "Repels an enemys attack"
-    --special properties
-    props.guard_animation = "GUARD1"
 
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
@@ -30,10 +28,13 @@ function package_init(package)
     package:set_codes({'A',"D","K","*"})
 end
 
-function card_create_action(actor, props)
+function card_create_action(actor,props)
     debug_print("in create_card_action()!")
 
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
+    --special properties
+    action.guard_animation = "GUARD1"
+
 	--protoman's counter in BN5 lasts 24 frames (384ms)
 	--there are 224ms of the shield fading away where protoman can move
 	local guarding_duration = 0.384
@@ -43,7 +44,8 @@ function card_create_action(actor, props)
 	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
 	action:override_animation_frames(FRAMES)
 
-    action.execute_func = function(self, user, props)
+    action.execute_func = function(self, user)
+        --local props = self:copy_metadata()
 		local guarding = false
         local guard_attachment = self:add_attachment("BUSTER")
         local guard_sprite = guard_attachment:sprite()
@@ -53,7 +55,9 @@ function card_create_action(actor, props)
 
         local guard_animation = guard_attachment:get_animation()
         guard_animation:load(sheild_animation_path)
-        guard_animation:set_state(props.guard_animation)
+        guard_animation:set_state(action.guard_animation)
+
+        local guarding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
 
 		self:add_anim_action(1,function()
 			guarding = true
@@ -61,24 +65,25 @@ function card_create_action(actor, props)
 		self:add_anim_action(2,function()
 			guard_animation:set_state("FADE")
 			guarding = false
+            user:remove_defense_rule(guarding_defense_rule)
 		end)
 
-        local guarding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
         guarding_defense_rule.can_block_func = function(judge, attacker, defender)
-                if not guarding then 
-					return 
-				end
-                judge:block_impact()
-
-                if attacker:copy_hit_props().damage > 0 then
-                    judge:block_damage()
-                    Engine.play_audio(tink_sfx, AudioPriority.Highest)
-                    local reflected_damage = props.damage
-                    local direction = actor:get_facing()
-                    spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx)
-                end
+            if not guarding then 
+                return 
             end
-        actor:add_defense_rule(guarding_defense_rule)
+            judge:block_impact()
+
+            if attacker:copy_hit_props().damage > 0 then
+                judge:block_damage()
+                Engine.play_audio(tink_sfx, AudioPriority.Highest)
+                local reflected_damage = props.damage
+                local direction = actor:get_facing()
+                spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx)
+            end
+        end
+
+        user:add_defense_rule(guarding_defense_rule)
     end
 
     return action
@@ -86,7 +91,6 @@ end
 
 function spawn_shockwave(owner_id, team, field, tile, direction,damage, wave_texture, wave_sfx)
     local spawn_next
-
     spawn_next = function()
         if not tile:is_walkable() then return end
 

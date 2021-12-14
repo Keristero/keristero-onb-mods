@@ -14,7 +14,7 @@ function package_init(package)
 
     local props = package:get_card_props()
     props.shortname = "ProtoSwrd"
-    props.damage = DAMAGE
+    props.damage = 80
     props.time_freeze = false
     props.element = Element.Sword
     props.description = "Cuts enmy in front! Range: 3"
@@ -24,7 +24,6 @@ function card_create_action(actor, props)
     print("in create_card_action()!")
     local action = Battle.CardAction.new(actor, "PLAYER_SWORD")
 	action:set_lockout(make_animation_lockout())
-	action.damage = DAMAGE
     action.execute_func = function(self, user)
 		self:add_anim_action(3,
 			function()
@@ -49,9 +48,9 @@ function card_create_action(actor, props)
 			end
 		)
 
-		self:add_anim_action(3,
+		self:add_anim_action(4,
 			function()
-				local sword = create_slash(user, "WIDE",action.damage)
+				local sword = create_slash(user, "WIDE",props.damage)
 				local tile = user:get_tile(user:get_facing(), 1)
 				local sharebox1 = Battle.SharedHitbox.new(sword, 0.15)
 				sharebox1:set_hit_props(sword:copy_hit_props())
