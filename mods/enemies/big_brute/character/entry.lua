@@ -177,9 +177,10 @@ function action_teleport(character, target_tile)
     action:set_lockout(make_sequence_lockout())
 
     action.teleport_size = "SMALL"
-    if character_info.height > 60 then
+    local character_height = character:get_height()
+    if character_height > 60 then
         action.teleport_size = "BIG"
-    elseif character_info.height > 40 then
+    elseif character_height > 40 then
         action.teleport_size = "MEDIUM"
     end
 
@@ -199,7 +200,7 @@ function action_teleport(character, target_tile)
         step1.update_func = function(self, dt)
             -- debug_print('action ' .. action_name .. ' step 1 update')
             if not action.arrival_artifact_created then
-                spawn_visual_artifact(target_tile,character,teleport_texture,teleport_animation_path,action.teleport_size.."_TELEPORT_TO",0,-character_info.height)
+                spawn_visual_artifact(target_tile,character,teleport_texture,teleport_animation_path,action.teleport_size.."_TELEPORT_TO",0,0)
                 action.arrival_artifact_created = true
             end
             if action.elapsed <= action.pre_teleport_ms then
