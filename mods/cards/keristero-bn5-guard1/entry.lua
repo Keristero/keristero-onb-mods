@@ -34,12 +34,12 @@ function card_create_action(actor,props)
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
     --special properties
     action.guard_animation = "GUARD1"
+    local guard_duration = 1.024
 
 	--protoman's counter in BN5 lasts 24 frames (384ms)
 	--there are 224ms of the shield fading away where protoman can move
-	local guarding_duration = 0.384
-	action:set_lockout(make_async_lockout(guarding_duration))
-	local GUARDING = {1,0.384}
+	action:set_lockout(make_async_lockout(guard_duration))
+	local GUARDING = {1,guard_duration}
 	local POST_GUARD = {1, 0.224} 
 	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
 	action:override_animation_frames(FRAMES)

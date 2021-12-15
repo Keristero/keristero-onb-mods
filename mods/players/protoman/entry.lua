@@ -66,6 +66,13 @@ function create_special_attack(player)
     props.damage = 30+(player:get_attack_level()*10)
     local reflect_action = Battle.CardAction.from_card("com.keristero.card.Guard1",player,props)
     reflect_action.guard_animation = "PROTOGUARD"
+    --protoman's counter in BN5 lasts 24 frames (384ms)
+    local guard_duration = 0.384
+    local GUARDING = {1,guard_duration}
+	local POST_GUARD = {1, 0.224}
+	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
+	reflect_action:override_animation_frames(FRAMES)
+    reflect_action:set_lockout(make_async_lockout(guard_duration))
     return reflect_action
 end
 
