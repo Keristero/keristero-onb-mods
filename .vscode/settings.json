@@ -23,7 +23,8 @@
         "make_frame_data",
         "make_async_lockout",
         "HitProps",
-        "Drag"
+        "Drag",
+        "Blocks"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"
