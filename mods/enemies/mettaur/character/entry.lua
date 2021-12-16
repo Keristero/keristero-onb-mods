@@ -5,6 +5,9 @@ local character_info = {name = "Mettaur", hp = 40,height=20,damage = 10}
 
 local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
 local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
+local teleport_animation_path = _modpath .. "teleport.animation"
+local teleport_texture_path = _modpath .. "teleport.png"
+local teleport_texture = Engine.load_texture(teleport_texture_path)
 
 local debug = true
 local function debug_print(text)
@@ -73,7 +76,7 @@ function package_init(self)
     -- Initial state
     self.animation:set_state("IDLE")
     self.animation:set_playback(Playback.Loop)
-    self.frames_between_actions = 35 
+    self.frames_between_actions = 40 
     self.cascade_frame_index = 5 --lower = faster shockwaves
     self.ai_wait = self.frames_between_actions
     self.ai_taken_turn = false
@@ -83,7 +86,6 @@ function package_init(self)
         local field = self:get_field()
         local id = self:get_id()
         local active_mob_id = get_active_mob_id_for_same_direction(facing)
-        --print('active mob id =',active_mob_id)
         if active_mob_id == id then
             take_turn(self)
         end
@@ -95,13 +97,17 @@ function package_init(self)
         local mob_sort_func = function(a,b)
             local met_a_tile = field:get_entity(a):get_current_tile()
             local met_b_tile = field:get_entity(b):get_current_tile()
-            return met_a_tile:x() < met_b_tile:x()
+            local var_a = (met_a_tile:x()*3)+met_a_tile:y()
+            local var_b = (met_b_tile:x()*3)+met_b_tile:y()
+            return var_a < var_b
         end
         left_mob_tracker:sort_turn_order(mob_sort_func)
+        right_mob_tracker:sort_turn_order(mob_sort_func,true)--reverse sort direction
     end
     self.battle_end_func = function(self)
         debug_print("battle_end_func called")
-        remove_enemy_from_tracking(self)
+        left_mob_tracker:clear()
+        right_mob_tracker:clear()
     end
     self.on_spawn_func = function(self, spawn_tile)
         debug_print("on_spawn_func called")
@@ -133,12 +139,10 @@ end
 
 function take_turn(self)
     local id = self:get_id()
-    debug_print(tostring(id).." wants to take turn")
     if self.ai_wait > 0 or self.ai_taken_turn then
         self.ai_wait = self.ai_wait - 1
         return
     end
-    debug_print(tostring(id).." taking turn")
     self.ai_taken_turn = true
     local moved = move_towards_character(self)
     if moved then
@@ -172,6 +176,9 @@ function move_towards_character(self)
     end
     if target_movement_tile then
         moved = self:teleport(target_movement_tile, ActionOrder.Immediate)
+        if moved then
+            spawn_visual_artifact(tile,self,teleport_texture,teleport_animation_path,"SMALL_TELEPORT_FROM",0,0)
+        end
     end
     return moved
 end
@@ -184,12 +191,16 @@ function action_shockwave(character)
     local action = Battle.CardAction.new(character, "ATTACK")
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
-		self:add_anim_action(12,
-			function()
-                local tile = character:get_tile(facing,1)
-                spawn_shockwave(character, tile, facing, character_info.damage, wave_texture, wave_sfx, 4)
-			end
-		)
+        self:add_anim_action(6,function ()
+            character:toggle_counter(true)
+        end)
+		self:add_anim_action(12,function()
+            local tile = character:get_tile(facing,1)
+            spawn_shockwave(character, tile, facing, character_info.damage, wave_texture, wave_sfx, character.cascade_frame_index)
+        end)
+        self:add_anim_action(13,function ()
+            character:toggle_counter(false)
+        end)
 	end
     return action
 end
@@ -239,10 +250,12 @@ function spawn_shockwave(owner, tile, direction, damage, wave_texture, wave_sfx,
 
         local sprite = spell:sprite()
         sprite:set_texture(wave_texture)
+        sprite:set_layer(-1)
 
         local animation = spell:get_animation()
         animation:load(_modpath .. "shockwave.animation")
         animation:set_state("DEFAULT")
+
         animation:on_frame(cascade_frame, function()
             tile = tile:get_tile(direction, 1)
             spawn_next()

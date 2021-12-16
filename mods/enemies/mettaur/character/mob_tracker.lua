@@ -47,8 +47,18 @@ function MobTracker:remove_by_id(mob_id)
     print('removing ',mob_id)
     local i = self:get_index(mob_id)
     table.remove(self.tbl_mobs,i)
+    if self.tbl_index > i then
+        self.tbl_index = self.tbl_index - 1
+    end
     if self.tbl_index > #self.tbl_mobs then
-        self.tbl_index = self.tbl_index - #self.tbl_mobs
+        self.tbl_index = 1
+    end
+end
+
+function MobTracker:clear()
+    print('clearing mob tracker')
+    for index, value in ipairs(self.tbl_mobs) do
+        table.remove(self.tbl_mobs,index)
     end
 end
 
