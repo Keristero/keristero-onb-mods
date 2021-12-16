@@ -13,7 +13,7 @@ end
 
 function MobTracker:add_by_id(mob_id)
     table.insert(self.tbl_mobs,mob_id)
-    print('added',mob_id)
+    --print('added',mob_id)
 end
 
 function MobTracker:print_ids()
@@ -23,7 +23,7 @@ function MobTracker:print_ids()
 end
 
 function MobTracker:sort_turn_order(sort_function,reverse_sorting)
-    print('sorting mob tracker turn order')
+    --print('sorting mob tracker turn order')
     local reversable_sort = function(a,b)
         local bool_result = sort_function(a,b)
         if reverse_sorting then
@@ -44,7 +44,7 @@ function MobTracker:get_index(mob_id)
 end
 
 function MobTracker:remove_by_id(mob_id)
-    print('removing ',mob_id)
+    --print('removing ',mob_id)
     local i = self:get_index(mob_id)
     table.remove(self.tbl_mobs,i)
     if self.tbl_index > i then
@@ -56,7 +56,7 @@ function MobTracker:remove_by_id(mob_id)
 end
 
 function MobTracker:clear()
-    print('clearing mob tracker')
+    --print('clearing mob tracker')
     for index, value in ipairs(self.tbl_mobs) do
         table.remove(self.tbl_mobs,index)
     end

@@ -24,7 +24,7 @@ function package_init(self)
     self:set_texture(self.texture, true)
     self:set_height(30)
     self:share_tile(false)
-    self:set_explosion_behavior(2, 1.0, false)
+    self:set_explosion_behavior(4, 0.5, false)
     self:set_offset(0, 0)
 
     --Initial state

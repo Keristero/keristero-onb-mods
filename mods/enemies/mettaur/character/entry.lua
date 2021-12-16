@@ -53,7 +53,7 @@ function package_init(self)
     -- Required function, main package information
 
     -- Load character resources
-    self.texture = Engine.load_texture(_modpath .. "battle.png")
+    self.texture = Engine.load_texture(_modpath .. "battle.greyscaled.png")
     self.animation = self:get_animation()
     self.animation:load(_modpath .. "battle.animation")
 
@@ -65,8 +65,9 @@ function package_init(self)
     self:set_texture(self.texture, true)
     self:set_height(character_info.height)
     self:share_tile(false)
-    self:set_explosion_behavior(4, 1.0, false)
+    self:set_explosion_behavior(4, 1, false)
     self:set_offset(0, 0)
+    self:set_palette(Engine.load_texture(_modpath.."battle_v3.palette.png"))
 
     --defense rules
     self.defense = Battle.DefenseVirusBody.new()
