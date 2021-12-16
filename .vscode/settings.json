@@ -24,7 +24,8 @@
         "make_async_lockout",
         "HitProps",
         "Drag",
-        "Blocks"
+        "Blocks",
+        "include"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

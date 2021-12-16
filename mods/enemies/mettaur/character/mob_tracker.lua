@@ -63,6 +63,9 @@ function MobTracker:advance_a_turn()
     end
 end
 
+return MobTracker
+
+--[[ 
 right_mobs = MobTracker:new()
 
 right_mobs:add_by_id(12)
@@ -98,4 +101,4 @@ print('active mob',right_mobs:get_active_mob())
 right_mobs:advance_a_turn()
 print('active mob',right_mobs:get_active_mob())
 right_mobs:advance_a_turn()
-print('active mob',right_mobs:get_active_mob())
+print('active mob',right_mobs:get_active_mob()) ]]
