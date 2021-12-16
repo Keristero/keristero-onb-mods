@@ -67,7 +67,7 @@ function package_init(self)
     self:share_tile(false)
     self:set_explosion_behavior(4, 1, false)
     self:set_offset(0, 0)
-    self:set_palette(Engine.load_texture(_modpath.."battle_v3.palette.png"))
+    self:set_palette(Engine.load_texture(_modpath.."battle_v1.palette.png"))
 
     --defense rules
     self.defense = Battle.DefenseVirusBody.new()
