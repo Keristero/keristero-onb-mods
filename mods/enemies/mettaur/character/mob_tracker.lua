@@ -22,8 +22,16 @@ function MobTracker:print_ids()
     end
 end
 
-function MobTracker:sort_turn_order(sort_function)
-    table.sort(self.tbl_mobs,sort_function)
+function MobTracker:sort_turn_order(sort_function,reverse_sorting)
+    print('sorting mob tracker turn order')
+    local reversable_sort = function(a,b)
+        local bool_result = sort_function(a,b)
+        if reverse_sorting then
+            bool_result = not bool_result
+        end
+        return bool_result
+    end
+    table.sort(self.tbl_mobs,reversable_sort)
 end
 
 function MobTracker:get_index(mob_id)
@@ -39,10 +47,20 @@ function MobTracker:remove_by_id(mob_id)
     print('removing ',mob_id)
     local i = self:get_index(mob_id)
     table.remove(self.tbl_mobs,i)
+    if self.tbl_index > #self.tbl_mobs then
+        self.tbl_index = self.tbl_index - #self.tbl_mobs
+    end
 end
 
 function MobTracker:get_active_mob()
     return self.tbl_mobs[self.tbl_index]
+end
+
+function MobTracker:advance_a_turn()
+    self.tbl_index = self.tbl_index + 1
+    if self.tbl_index > #self.tbl_mobs then
+        self.tbl_index = self.tbl_index - #self.tbl_mobs
+    end
 end
 
 right_mobs = MobTracker:new()
@@ -50,11 +68,34 @@ right_mobs = MobTracker:new()
 right_mobs:add_by_id(12)
 right_mobs:add_by_id(10)
 right_mobs:add_by_id(11)
+right_mobs:add_by_id(15)
 right_mobs:print_ids()
+right_mobs:sort_turn_order(function(a,b)
+    return b > a
+end)
+right_mobs:print_ids()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
 right_mobs:remove_by_id(10)
-right_mobs:print_ids()
-
-left_mobs = MobTracker:new()
-
-left_mobs:add_by_id(20)
-left_mobs:print_ids()
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:remove_by_id(12)
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
+right_mobs:advance_a_turn()
+print('active mob',right_mobs:get_active_mob())
