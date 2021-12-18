@@ -1,14 +1,5 @@
-nonce = function() end
-
-local debug = true
-function debug_print(text)
-    if debug then
-        print("[vulcan] " .. text)
-    end
-end
-
 function package_requires()
-    Engine.requires_card("com.keristero.card.Vulcan0")
+    Engine.requires_card("com.keristero.card.Vulcan1")
 end
 
 function package_init(package)
@@ -27,12 +18,9 @@ function package_init(package)
 end
 
 function card_create_action(actor, props)
-    debug_print("in create_card_action()!")
-
-    local card_action = Battle.CardAction.from_card("com.keristero.card.Vulcan0",actor,props)
+    local card_action = Battle.CardAction.from_card("com.keristero.card.Vulcan1",actor,props)
     card_action.shots_animated = 10
     card_action.hits = 5
     card_action.before_exec(card_action)
     return card_action
-    --special properties
 end
