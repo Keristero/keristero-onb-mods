@@ -5,6 +5,8 @@ local attachment_texture = Engine.load_texture(_modpath .. "attachment.png")
 local attachment_animation_path = _modpath .. "attachment.animation"
 local vulcan_impact_texture = Engine.load_texture(_modpath .. "vulcan_impact.png")
 local vulcan_impact_animation_path = _modpath .. "vulcan_impact.animation"
+local bullet_hit_texture = Engine.load_texture(_modpath .. "bullet_hit.png")
+local bullet_hit_animation_path = _modpath .. "bullet_hit.animation"
 local gun_sfx = Engine.load_audio(_modpath .. "gun.ogg")
 
 
@@ -26,7 +28,7 @@ function package_init(package)
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
     package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
-    package:set_codes({'A',"D","K","*"})
+    package:set_codes({"B","D","*","S"})
 end
 
 function card_create_action(actor,props)
@@ -93,6 +95,7 @@ function card_create_action(actor,props)
             local field = actor:get_field()
             create_vulcan_damage(actor,vulcan_direction,hit_tile,hit_props)
             battle_helpers.spawn_visual_artifact(field,hit_tile,vulcan_impact_texture,vulcan_impact_animation_path,"IDLE",-10,-55)
+            battle_helpers.spawn_visual_artifact(field,hit_tile,bullet_hit_texture,bullet_hit_animation_path,"HIT",math.random(-20,20),math.random(-55,-30))
             self.has_hit = true
         end
 

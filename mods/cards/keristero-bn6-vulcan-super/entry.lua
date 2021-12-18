@@ -18,13 +18,13 @@ function package_init(package)
     props.damage = 10
     props.time_freeze = false
     props.element = Element.None
-    props.description = "10-shot vulcan cannon!"
+    props.description = "12-shot vulcan cannon!"
     props.class = CardClass.Mega
 
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
     package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
-    package:set_codes({'A',"D","K","*"})
+    package:set_codes({"V"})
 end
 
 function card_create_action(actor, props)

@@ -42,9 +42,6 @@ function battle_helpers.invisible_projectile(user)
         end
         self:delete()
     end
-    spell.delete_func = function(self)
-		self:erase()
-    end
 	return spell
 end
 

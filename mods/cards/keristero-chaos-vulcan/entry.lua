@@ -26,5 +26,4 @@ function card_create_action(actor, props)
     card_action.shots_animated = card_action.hits*2
     card_action.before_exec(card_action)
     return card_action
-    --special properties
 end
