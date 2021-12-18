@@ -15,6 +15,7 @@ the sources folder has assets used to create the mods and is only there for conv
 - Cards
     - BN5 Guard 1 / 2 / 3
     - Protoman Charge Buster
+    - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
 - Enemies
     - BN6 Mettaur
     - BN5 Big Brute
@@ -27,7 +28,7 @@ the sources folder has assets used to create the mods and is only there for conv
 
 # Incomplete mods
 - Cards
-    - Vulcan
+    - MiniBomb
 - Enemies
     - BN2 Popper
 - Players
