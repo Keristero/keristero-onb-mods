@@ -25,7 +25,8 @@
         "HitProps",
         "Drag",
         "Blocks",
-        "include"
+        "include",
+        "CardClass"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

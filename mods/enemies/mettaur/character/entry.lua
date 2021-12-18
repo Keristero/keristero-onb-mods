@@ -1,4 +1,5 @@
 local MobTracker = include("mob_tracker.lua")
+local battle_helpers = include("battle_helpers.lua")
 local left_mob_tracker = MobTracker:new()
 local right_mob_tracker = MobTracker:new()
 local character_info = {name = "Mettaur", hp = 40,height=20,damage = 10}
@@ -167,6 +168,7 @@ function move_towards_character(self)
     local target_character = find_target(self)
     local target_character_tile = target_character:get_current_tile()
     local tile = self:get_current_tile()
+    local field = self:get_field()
     local moved = false
     local target_movement_tile = nil
     if tile:y() < target_character_tile:y() then
@@ -178,7 +180,7 @@ function move_towards_character(self)
     if target_movement_tile then
         moved = self:teleport(target_movement_tile, ActionOrder.Immediate)
         if moved then
-            spawn_visual_artifact(tile,self,teleport_texture,teleport_animation_path,"SMALL_TELEPORT_FROM",0,0)
+            battle_helpers.spawn_visual_artifact(field,tile,teleport_texture,teleport_animation_path,"SMALL_TELEPORT_FROM",0,0)
         end
     end
     return moved
@@ -217,20 +219,6 @@ function is_tile_free_for_movement(tile,character)
         return false
     end
     return true
-end
-
-function spawn_visual_artifact(tile,character,texture,animation_path,animation_state,position_x,position_y)
-    local field = character:get_field()
-    local visual_artifact = Battle.Artifact.new()
-    visual_artifact:set_texture(texture,true)
-    local anim = visual_artifact:get_animation()
-    anim:load(animation_path)
-    anim:set_state(animation_state)
-    anim:on_complete(function()
-        visual_artifact:delete()
-    end)
-    visual_artifact:sprite():set_offset(position_x,position_y)
-    field:spawn(visual_artifact, tile:x(), tile:y())
 end
 
 function spawn_shockwave(owner, tile, direction, damage, wave_texture, wave_sfx, cascade_frame_index)
