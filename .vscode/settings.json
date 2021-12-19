@@ -26,9 +26,7 @@
         "Drag",
         "Blocks",
         "include",
-        "CardClass"
+        "CardClass",
+        "frames"
     ],
-    "Lua.diagnostics.disable": [
-        "lowercase-global"
-    ]
 }
