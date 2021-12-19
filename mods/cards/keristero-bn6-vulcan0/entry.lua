@@ -14,7 +14,7 @@ function package_init(package)
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
     package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
-    package:set_codes({'A',"D","K","*"})
+    package:set_codes({"O","*"})
 end
 
 function card_create_action(actor, props)

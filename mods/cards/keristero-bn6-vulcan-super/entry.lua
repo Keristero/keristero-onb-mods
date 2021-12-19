@@ -19,7 +19,7 @@ function package_init(package)
     props.time_freeze = false
     props.element = Element.None
     props.description = "12-shot vulcan cannon!"
-    props.class = CardClass.Mega
+    props.card_class = CardClass.Mega
 
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
