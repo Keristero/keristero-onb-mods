@@ -29,4 +29,7 @@
         "CardClass",
         "frames"
     ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global"
+    ],
 }

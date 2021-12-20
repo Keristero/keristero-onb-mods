@@ -1,0 +1,11 @@
+animation state="RETICLE_MOVE"
+frame duration="0.112" x="0" y="33" w="30" h="30" originx="14" originy="15"
+frame duration="0.1" x="0" y="0" w="32" h="33" originx="15" originy="17"
+
+animation state="RETICLE_LOCK"
+frame duration="0.016" x="0" y="33" w="30" h="30" originx="14" originy="15"
+frame duration="0.08" x="30" y="33" w="28" h="28" originx="13" originy="14"
+frame duration="0.08" x="32" y="0" w="28" h="28" originx="13" originy="14"
+frame duration="0.08" x="30" y="33" w="28" h="28" originx="13" originy="14"
+frame duration="0.08" x="32" y="0" w="28" h="28" originx="13" originy="14"
+frame duration="0.08" x="30" y="33" w="28" h="28" originx="13" originy="14"
