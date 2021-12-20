@@ -20,6 +20,27 @@ local function find_targets_ahead(user)
     return list
 end
 
+function action_scan(character)
+    local facing = character:get_facing()
+    debug_print('action ' .. action_name)
+
+    local action = Battle.CardAction.new(character, "ATTACK")
+	action:set_lockout(make_animation_lockout())
+    action.update_func = function ()
+        
+    end
+    action.execute_func = function(self, user)
+        self:add_anim_action(4,function ()
+
+        end)
+	end
+    return action
+end
+
+function create_scanning_reticle()
+end
+
+
 local function package_init(self)
     debug_print("package_init called")
     --Required function, main package information
@@ -41,13 +62,12 @@ local function package_init(self)
     --Initial state
     self.animation:set_state("IDLE")
     self.animation:set_playback(Playback.Loop)
-    self.ai_state = "idle"
 
-    self.update_func = function (self,dt)
-        local character = self
-        local character_facing = character:get_facing()
-        if self.ai_state == "idle" then
-            
+    self.update_func = function (character,dt)
+        local targets = find_targets_ahead(character)
+        if #targets > 0 then
+            local action = action_scan(character)
+            character:card_action_event(action, ActionOrder.Voluntary)
         end
     end
     self.battle_start_func = function (self)

@@ -45,4 +45,17 @@ function battle_helpers.invisible_projectile(user)
 	return spell
 end
 
+local function run_after(character, frame_count, fn)
+    local component = Battle.Component.new(character, Lifetimes.Local)
+    component.update_func = function()
+      frame_count = frame_count - 1
+  
+      if frame_count < 0 then
+        component:eject()
+        fn()
+      end
+    end
+    character:register_component(component)
+end
+
 return battle_helpers
