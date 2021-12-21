@@ -86,25 +86,18 @@ function card_create_action(actor,props)
             attachment_animation:set_playback(Playback.Loop)
 		end)
 
-        local on_hitscan_function = function (self,other)
-            if self.has_hit then
-                --ignore any hits beyond the first one
-                return
-            end
-            local hit_tile = other:get_current_tile()
-            local field = actor:get_field()
-            create_vulcan_damage(actor,vulcan_direction,hit_tile,hit_props)
-            battle_helpers.spawn_visual_artifact(field,hit_tile,vulcan_impact_texture,vulcan_impact_animation_path,"IDLE",-10,-55)
-            battle_helpers.spawn_visual_artifact(field,hit_tile,bullet_hit_texture,bullet_hit_animation_path,"HIT",math.random(-20,20),math.random(-55,-30))
-            self.has_hit = true
-        end
-
         for i = 1, action.hits, 1 do
             self:add_anim_action(i*4,function()
                 Engine.play_audio(gun_sfx, AudioPriority.Highest)
-                local invisible_projectile = battle_helpers.invisible_projectile(actor)
-                invisible_projectile.attack_func = on_hitscan_function
-                actor:get_field():spawn(invisible_projectile, user:get_tile(vulcan_direction,1))
+                local target = battle_helpers.get_first_target_ahead(user)
+                if not target then
+                --ignore any hits beyond the first one
+                return
+                end
+                local hit_tile = target:get_current_tile()
+                create_vulcan_damage(actor,vulcan_direction,hit_tile,hit_props)
+                battle_helpers.spawn_visual_artifact(actor,hit_tile,vulcan_impact_texture,vulcan_impact_animation_path,"IDLE",-10,-55)
+                battle_helpers.spawn_visual_artifact(actor,hit_tile,bullet_hit_texture,bullet_hit_animation_path,"HIT",math.random(-20,20),math.random(-55,-30))
             end)
         end
 

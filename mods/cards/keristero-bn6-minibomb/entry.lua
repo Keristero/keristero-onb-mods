@@ -1,5 +1,3 @@
-local battle_helpers = include("battle_helpers.lua")
-
 local debug = true
 local attachment_texture = Engine.load_texture(_modpath .. "attachment.png")
 local attachment_animation_path = _modpath .. "attachment.animation"
