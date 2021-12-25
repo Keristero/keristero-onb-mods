@@ -31,6 +31,7 @@ the sources folder has assets used to create the mods and is only there for conv
 - Cards
 - Enemies
     - BN2 Popper
+    - BN6 Gunner
 - Players
     - Colonel (needs bug fixes + changes)
     - Gutsman (No battle)
