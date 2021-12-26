@@ -7,7 +7,7 @@ local mob_package_id = "com."..package_prefix..".mob."..character_name
 
 function package_requires_scripts()
     -- Note: `requires_character` will throw if unable to find or load
-    Engine.define_character(character_package_id, _modpath.."character")
+    Engine.define_character(character_package_id, _modpath..character_name)
 end
 
 function package_init(package) 
