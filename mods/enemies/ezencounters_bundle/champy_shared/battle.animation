@@ -1,0 +1,26 @@
+imagePath="C:/Users/Proto/Documents/Code/OpenNetBattle/build/Release/resources/mods/enemies/champy/character/battle.png"
+
+animation state="IDLE"
+frame duration="0.112" x="50" y="0" w="42" h="46" originx="20" originy="42" flipx="1" flipy="0" 
+frame duration="0.112" x="0" y="53" w="42" h="45" originx="18" originy="41" flipx="1" flipy="0" 
+frame duration="0.112" x="42" y="53" w="44" h="44" originx="17" originy="40" flipx="1" flipy="0" 
+
+animation state="UPPER"
+frame duration="0.064" x="46" y="98" w="50" h="43" originx="23" originy="39" flipx="1" flipy="0" 
+frame duration="0.016" x="46" y="98" w="50" h="43" originx="23" originy="39" flipx="1" flipy="0" 
+frame duration="0.08" x="86" y="53" w="54" h="44" originx="24" originy="40" flipx="1" flipy="0" 
+frame duration="0.032" x="86" y="53" w="54" h="44" originx="24" originy="40" flipx="1" flipy="0" 
+frame duration="0.064" x="0" y="98" w="46" h="44" originx="33" originy="40" flipx="1" flipy="0" 
+frame duration="0.032" x="92" y="0" w="49" h="46" originx="29" originy="42" flipx="1" flipy="0" 
+frame duration="0.096" x="0" y="0" w="50" h="53" originx="28" originy="45" flipx="1" flipy="0" 
+
+animation state="TELEPORT_EFFECT"
+frame duration="0.032" x="0" y="142" w="30" h="32" originx="14" originy="17" flipx="0" flipy="0" 
+frame duration="0.032" x="96" y="98" w="25" h="40" originx="12" originy="23" flipx="0" flipy="0" 
+
+animation state="JAB"
+frame duration="0.160" x="3" y="180" w="50" h="44" originx="23" originy="39" flipx="1" flipy="0" 
+frame duration="0.06" x="139" y="6" w="50" h="46" originx="23" originy="41" flipx="1" flipy="0" 
+frame duration="0.06" x="140" y="53" w="50" h="44" originx="25" originy="39" flipx="1" flipy="0" 
+frame duration="0.06" x="127" y="103" w="64" h="46" originx="36" originy="39" flipx="1" flipy="0" 
+frame duration="0.06" x="55" y="180" w="76" h="46" originx="46" originy="42" flipx="1" flipy="0" 
