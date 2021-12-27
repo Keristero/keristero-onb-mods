@@ -21,7 +21,7 @@ the sources folder has assets used to create the mods and is only there for conv
     - BN6 Mettaur
     - BN5 Big Brute
     - BN5 Champy
-    - Ultimate Warrior (has a few bugs)
+    - Ultimate Warrior
 - Players
     - Protoman  (Dependencies):
         - Guard 1

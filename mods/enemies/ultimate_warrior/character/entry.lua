@@ -1,3 +1,4 @@
+local battle_helpers = include("battle_helpers.lua")
 
 local character_info = {
     name = "RickAstley",
@@ -133,7 +134,7 @@ function package_init(self)
         debug_print("interrupted_callback called")
         self.ai_state = "idle"
     end
-    self.register_status_callback(Hit.Freeze | Hit.Flinch | Hit.Stun | Hit.Drag | Hit.Bubble,self.interrupted_callback)
+    self:register_status_callback(Hit.Freeze | Hit.Flinch | Hit.Stun | Hit.Drag | Hit.Bubble,self.interrupted_callback)
 end
 
 
@@ -193,6 +194,9 @@ function action_random_attack(character)
         --Try adding execute attack to the pool of attacks, if there is an applicible target
         local found_target = false
         local targets = field:find_nearest_characters(character,function(other_character)
+            if other_character:get_id() == character:get_id() then
+                return false
+            end
             if not found_target and other_character:get_health() < 300 then
                 found_target = true
                 return true
@@ -518,20 +522,6 @@ function action_fire_tower_target_tiles(character,target_tiles,damage,tower_dela
     return action
 end
 
-function spawn_visual_artifact(tile,character,texture,animation_path,animation_state,position_x,position_y)
-    local field = character:get_field()
-    local visual_artifact = Battle.Artifact.new(character:get_team())
-    visual_artifact:set_texture(texture,true)
-    local anim = visual_artifact:get_animation()
-    anim:load(animation_path)
-    anim:set_state(animation_state)
-    anim:on_complete(function()
-        visual_artifact:delete()
-    end)
-    visual_artifact:sprite():set_offset(position_x,position_y)
-    field:spawn(visual_artifact, tile:x(), tile:y())
-end
-
 function fire_tower_spell(user, damage, duration, x, y)
     local field = user:get_field()
     local target_tile = field:tile_at(x,y)
@@ -552,7 +542,7 @@ function fire_tower_spell(user, damage, duration, x, y)
     spell.attack_func = function(self, other)
         local tile = self:get_current_tile()
         --TODO replace this with volcano effect (gotta make the animation)
-        spawn_visual_artifact(tile,self,impacts_texture,impacts_animation_path,"VOLCANO",0,0)
+        battle_helpers.spawn_visual_artifact(field,tile,impacts_texture,impacts_animation_path,"VOLCANO",0,0)
         if user.seconds_since_attack_landed then
             --update this value for ai logic if it exists
             user.seconds_since_attack_landed = 0

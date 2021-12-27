@@ -244,6 +244,7 @@ function spawn_shockwave(owner, tile, direction, damage, wave_texture, wave_sfx,
         local animation = spell:get_animation()
         animation:load(_modpath .. "shockwave.animation")
         animation:set_state("DEFAULT")
+        animation:refresh(sprite)
 
         animation:on_frame(cascade_frame, function()
             tile = tile:get_tile(direction, 1)
