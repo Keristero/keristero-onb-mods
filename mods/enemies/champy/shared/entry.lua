@@ -160,6 +160,7 @@ local function start_hide(character, target_tile, seconds, callback)
         local tile = self.start_tile
         local id = self:get_owner():get_id()
         tile:remove_entity_by_id(id)
+        tile:reserve_entity_by_id(id)
         debug_print("removed entity "..id)
     end
 
@@ -214,6 +215,12 @@ local function vanishing_teleport_action(user,target_tile)
                 function (owner, tile)
                     tile:add_entity(owner)
                     teleport_effect_artifact(owner:get_field(), tile)
+                    local obsts = tile:find_obstacles(function(o) return true end)
+
+                    for i=1, #obsts do
+                        obsts[i]:delete()
+                    end
+
                     print("Finished hiding!")
                     step1_done = true
                 end
@@ -406,7 +413,7 @@ local function package_init(self)
    end
     self.can_move_to_func = function (tile)
         debug_print("can_move_to_func called")
-        return true
+        return not(tile:is_edge() and tile:is_hidden())
     end
     self.delete_func = function (self)
         debug_print("delete_func called")
