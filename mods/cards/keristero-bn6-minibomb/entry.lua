@@ -62,8 +62,13 @@ function card_create_action(actor,props)
             local toss_height = 70
             local facing = user:get_facing()
             local target_tile = user:get_tile(facing,tiles_ahead)
+            if not target_tile then
+                return
+            end
             action.on_landing = function ()
-                hit_explosion(user,target_tile,hit_props,explosion_texture,explosion_animation_path,explosion_sfx)
+                if target_tile:is_walkable() then
+                    hit_explosion(user,target_tile,hit_props,explosion_texture,explosion_animation_path,explosion_sfx)
+                end
             end
             toss_spell(user,toss_height,attachment_texture,attachment_animation_path,target_tile,frames_in_air,action.on_landing)
 		end)
@@ -88,6 +93,9 @@ function toss_spell(tosser,toss_height,texture,animation_path,target_tile,frames
     spell.jump_started = false
     spell.starting_y_offset = starting_height
     spell.starting_x_offset = 10
+    if tosser:get_facing() == Direction.Left then
+        spell.starting_x_offset = -10
+    end
     spell.y_offset = spell.starting_y_offset
     spell.x_offset = spell.starting_x_offset
     local sprite = spell:sprite()
