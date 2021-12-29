@@ -72,14 +72,21 @@ function card_create_action(actor,props)
             if not guarding then 
                 return 
             end
-            judge:block_impact()
-
-            if attacker:copy_hit_props().damage > 0 then
+            local attacker_hit_props = attacker:copy_hit_props()
+            if attacker_hit_props.damage > 0 then
+                if attacker_hit_props.flags & Hit.Breaking == Hit.Breaking then
+                    --cant block breaking hits with guard
+                    return
+                end
+                judge:block_impact()
                 judge:block_damage()
                 Engine.play_audio(tink_sfx, AudioPriority.Highest)
                 local reflected_damage = props.damage
                 local direction = actor:get_facing()
-                spawn_shockwave(actor:get_id(), actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
+                if not guarding_defense_rule.has_reflected then
+                    spawn_shockwave(actor, actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
+                    guarding_defense_rule.has_reflected = true
+                end
             end
         end
 
@@ -89,7 +96,7 @@ function card_create_action(actor,props)
     return action
 end
 
-function spawn_shockwave(owner_id, team, field, tile, direction,damage, wave_texture, wave_sfx,frame_time)
+function spawn_shockwave(owner, team, field, tile, direction,damage, wave_texture, wave_sfx,frame_time)
     local spawn_next
     spawn_next = function()
         if not tile:is_walkable() then return end
@@ -99,7 +106,7 @@ function spawn_shockwave(owner_id, team, field, tile, direction,damage, wave_tex
         local spell = Battle.Spell.new(team)
         spell:set_facing(direction)
         spell:highlight_tile(Highlight.Solid)
-        spell:set_hit_props(HitProps.new(damage, Hit.Flash, Element.None, owner_id, Drag.new()))
+        spell:set_hit_props(HitProps.new(damage, Hit.Impact|Hit.Flash, Element.None, owner:get_context() , Drag.None))
 
         local sprite = spell:sprite()
         sprite:set_texture(wave_texture)
