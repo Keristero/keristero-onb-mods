@@ -18,7 +18,7 @@ local tink_sfx = Engine.load_audio(_modpath .. "tink.ogg")
 --variables that change for each version of the card
 local guard_details = {
     name="Guard2",
-    codes={'A',"D","K","*"},
+    codes={'B',"L","Q","*"},
     damage=100,
     duration=1.024,
     guard_animation = "GUARD2"
