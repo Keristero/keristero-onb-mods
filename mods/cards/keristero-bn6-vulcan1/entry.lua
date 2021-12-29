@@ -16,26 +16,40 @@ function debug_print(text)
     end
 end
 
+local vulcan_details = {
+    name="Vulcan1",
+    description="3-shot to pierce 1 panel!",
+    codes={"B","D","*","S"},
+    damage=10,
+    time_freeze=false,
+    shots_animated=4,
+    hits=3,
+    can_boost=true,
+    card_class=CardClass.Standard
+}
+
 function package_init(package)
     local props = package:get_card_props()
     --standard properties
-    props.shortname = "Vulcan1"
-    props.damage = 10
-    props.time_freeze = false
+    props.shortname = vulcan_details.name
+    props.damage = vulcan_details.damage
+    props.time_freeze = vulcan_details.time_freeze
     props.element = Element.None
-    props.description = "3-shot to pierce 1 panel!"
+    props.description = vulcan_details.description
+    props.can_boost = vulcan_details.can_boost
+    props.card_class = vulcan_details.card_class
 
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
     package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
-    package:set_codes({"B","D","*","S"})
+    package:set_codes(vulcan_details.codes)
 end
 
 function card_create_action(actor,props)
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
 	action:set_lockout(make_animation_lockout())
-    action.shots_animated = 4
-    action.hits = 3
+    action.shots_animated = vulcan_details.shots_animated
+    action.hits = vulcan_details.hits
     local vulcan_direction = actor:get_facing()
     local f_padding = {1,0.032}
     action.frames = {f_padding,f_padding,f_padding,f_padding,f_padding,f_padding,f_padding}
@@ -60,9 +74,8 @@ function card_create_action(actor,props)
         frame_prepared = true
     end
 
-    if props.shortname == "Vulcan1" then
-        action.before_exec(action)
-    end
+    --prepare override frame data
+    action.before_exec(action)
 
     action.execute_func = function(self, user)
         if not frame_prepared then
