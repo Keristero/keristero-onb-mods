@@ -33,9 +33,6 @@ function package_build(mob)
     local test_spawner = mob:create_spawner(get_package("Champy"),Rank.V1)
     test_spawner:spawn_at(4, 1)
 
-    test_spawner = mob:create_spawner(get_package("Chumpy"),Rank.V1)
-    test_spawner:spawn_at(6, 1)
-
     test_spawner = mob:create_spawner(get_package("Chimpy"),Rank.V1)
     test_spawner:spawn_at(5, 2)
 

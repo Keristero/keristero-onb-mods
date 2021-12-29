@@ -5,8 +5,7 @@ local enemy_info = {
 }
 
 local function debug_print(text)
-    -- uncomment below to debug:
-    -- print("[champy] "..text)
+    --print("[champy] "..text)
 end
 
 local punch_sfx = Engine.load_audio(shared_folder_path.."punch.ogg")
@@ -41,7 +40,6 @@ local function target_first_enemy_tile(user,direction,can_hit_back_column)
                 closest_x_dist = x_dist
             end
         end
-        print('closest x dist '..closest_x_dist)
         return user:get_tile(direction,closest_x_dist)
     end
     return nil
@@ -132,11 +130,9 @@ local function start_hide(character, target_tile, seconds, callback)
     teleport_effect_artifact(character:get_field(), character:get_current_tile())
     local c = Battle.Component.new(character, Lifetimes.Battlestep)
     c.duration = seconds
+    c.target_reserved = false
     c.start_tile = character:get_current_tile()
     c.target_tile = target_tile
-    print("starting hide with duration "..c.duration..' start:'..c.start_tile:x()..','..c.start_tile:y()..' end:'..c.target_tile:x()..','..c.target_tile:y())
-
-
     c.update_func = function(self, dt)
         if self:get_owner():get_health() == 0 then
             self:eject()
@@ -145,6 +141,18 @@ local function start_hide(character, target_tile, seconds, callback)
 
         self.duration = self.duration - dt
         debug_print("updated hide component "..self.duration)
+        if not c.target_reserved and self.duration <= seconds-0.240 then
+            --a short delay after hiding (15 frames) try retargetting
+            local facing = character:get_facing()
+            local enemy_tile = target_first_enemy_tile(character,facing,false)
+            if enemy_tile ~= nil then
+                local reverse_dir = Direction.reverse(facing)
+                c.target_tile = enemy_tile:get_tile(reverse_dir,1)
+            end
+            --now reserve the target tile
+            c.target_tile:reserve_entity_by_id(character:get_id())
+            c.target_reserved = true
+        end
         if self.duration <= 0 then
             local id = self:get_owner():get_id()
             debug_print("adding entity "..id)
@@ -157,10 +165,9 @@ local function start_hide(character, target_tile, seconds, callback)
     end
 
     c.scene_inject_func = function(self)
-        local tile = self.start_tile
         local id = self:get_owner():get_id()
-        tile:remove_entity_by_id(id)
-        tile:reserve_entity_by_id(id)
+        self.start_tile:remove_entity_by_id(id)
+        self.start_tile:reserve_entity_by_id(id)
         debug_print("removed entity "..id)
     end
 
@@ -172,7 +179,6 @@ end
 
 local function vanishing_teleport_action(user,target_tile)
     print("vanishing teleport")
-    target_tile:reserve_entity_by_id(user:get_id())
 
     local action = Battle.CardAction.new(user, "IDLE")
     action:set_lockout(make_sequence_lockout())
@@ -220,8 +226,6 @@ local function vanishing_teleport_action(user,target_tile)
                     for i=1, #obsts do
                         obsts[i]:delete()
                     end
-
-                    print("Finished hiding!")
                     step1_done = true
                 end
             )
@@ -242,6 +246,7 @@ local function vanishing_teleport_action(user,target_tile)
             local punch_anim = actor:get_animation()
             punch_anim:set_state("UPPER")
             punch_anim:set_playback(Playback.Once)
+            actor:toggle_counter(true)
             punch_anim:on_frame(5, function ()
                 local direction = user:get_facing()
                 local target_tile = user:get_tile(direction,1)
@@ -249,7 +254,11 @@ local function vanishing_teleport_action(user,target_tile)
                     fire_burst(user,target_tile,user._punch_damage)
                 end
             end, true)
+            punch_anim:on_frame(6, function ()
+                actor:toggle_counter(false)
+            end, true)
             punch_anim:on_complete(function()
+                actor:toggle_counter(false)
                 debug_print("completed uppercut attack")
                 local idle_anim = actor:get_animation()
                 idle_anim:set_state("IDLE")
@@ -278,6 +287,7 @@ local function vanishing_teleport_action(user,target_tile)
             local punch_anim = actor:get_animation()
             punch_anim:set_state("JAB")
             punch_anim:set_playback(Playback.Once)
+            actor:toggle_counter(true)
             punch_anim:on_frame(4, function ()
                 local direction = user:get_facing()
                 local target_tile = user:get_tile(direction,1)
@@ -285,7 +295,11 @@ local function vanishing_teleport_action(user,target_tile)
                     fire_burst(user,target_tile,user._punch_damage,true)
                 end
             end, true)
+            punch_anim:on_frame(5, function ()
+                actor:toggle_counter(false)
+            end, true)
             punch_anim:on_complete(function()
+                actor:toggle_counter(false)
                 debug_print("completed jab attack")
                 local idle_anim = actor:get_animation()
                 idle_anim:set_state("IDLE")
@@ -349,7 +363,10 @@ local function package_init(self)
     self:share_tile(false)
     self:set_explosion_behavior(2, 1.0, false)
     self:set_offset(0, 0)
-    --self:set_palette(Engine.load_texture(shared_folder_path.."battle.palette.png"))
+
+    --defense rules
+    self.defense = Battle.DefenseVirusBody.new()
+    self:add_defense_rule(self.defense)
     
     --Initial state
     self.animation:set_state("IDLE")
@@ -372,14 +389,13 @@ local function package_init(self)
                 return
             end
 
-            if not enemy_tile:is_walkable() then 
-                return 
-            end
-
             debug_print('aha, a target...')
             local reverse_dir = Direction.reverse(character_facing)
             debug_print('reverse dir = '..reverse_dir)
             local target_tile = enemy_tile:get_tile(reverse_dir,1)
+            if not target_tile:is_walkable() then
+                return
+            end
             local action = vanishing_teleport_action(character,target_tile)
             -- This callback has not actually been added yet
             action.action_end_func = function(self)
@@ -413,7 +429,7 @@ local function package_init(self)
    end
     self.can_move_to_func = function (tile)
         debug_print("can_move_to_func called")
-        return not(tile:is_edge() and tile:is_hidden())
+        return not(tile:is_edge() or tile:is_hidden())
     end
     self.delete_func = function (self)
         debug_print("delete_func called")
