@@ -14,21 +14,19 @@ the sources folder has assets used to create the mods and is only there for conv
 # Working mods
 - Cards
     - BN5 Guard 1 / 2 / 3
-    - Protoman Charge Buster
-    - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
     - MiniBomb
+    - Protoman Charge Buster
 - Enemies
     - BN6 Mettaur
     - BN5 Big Brute
     - BN5 Champy
     - Ultimate Warrior
 - Players
-    - Protoman  (Dependencies):
-        - Guard 1
-        - Protoman Charge Buster
 
 # Incomplete mods
 - Cards
+    - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
+    - exodia-right-leg (for exodia PA once program advances are in)
 - Enemies
     - BN2 Popper
     - BN6 Gunner
@@ -36,3 +34,6 @@ the sources folder has assets used to create the mods and is only there for conv
     - Colonel (needs bug fixes + changes)
     - Gutsman (No battle)
     - AOE Villager (No battle)
+    - Protoman  (Dependencies):
+        - Guard 1
+        - Protoman Charge Buster
