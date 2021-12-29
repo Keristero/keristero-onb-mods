@@ -1,4 +1,4 @@
-nonce = function() end
+local battle_helpers = include("battle_helpers.lua")
 
 local debug = true
 function debug_print(text)
@@ -11,13 +11,24 @@ local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
 local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
 local shield_texture = Engine.load_texture(_modpath .. "guard_attachment.png")
 local sheild_animation_path = _modpath .. "guard_attachment.animation"
+local guard_hit_effect_texture = Engine.load_texture(_modpath .. "guard_hit.png")
+local guard_hit_effect_animation_path = _modpath .. "guard_hit.animation"
 local tink_sfx = Engine.load_audio(_modpath .. "tink.ogg")
+
+--variables that change for each version of the card
+local guard_details = {
+    name="Guard1",
+    codes={'A',"D","K","*"},
+    damage=50,
+    duration=1.024,
+    guard_animation = "GUARD1"
+}
 
 function package_init(package)
     local props = package:get_card_props()
     --standard properties
-    props.shortname = "Guard1"
-    props.damage = 50
+    props.shortname = guard_details.name
+    props.damage = guard_details.damage
     props.time_freeze = false
     props.element = Element.None
     props.description = "Repels an enemys attack"
@@ -25,7 +36,7 @@ function package_init(package)
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
     package:set_preview_texture(Engine.load_texture(_modpath .. "preview_"..props.shortname..".png"))
-    package:set_codes({'A',"D","K","*"})
+    package:set_codes(guard_details.codes)
 end
 
 function card_create_action(actor,props)
@@ -33,13 +44,12 @@ function card_create_action(actor,props)
 
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
     --special properties
-    action.guard_animation = "GUARD1"
-    local guard_duration = 1.024
+    action.guard_animation = guard_details.guard_animation
 
 	--protoman's counter in BN5 lasts 24 frames (384ms)
 	--there are 224ms of the shield fading away where protoman can move
-	action:set_lockout(make_async_lockout(guard_duration))
-	local GUARDING = {1,guard_duration}
+	action:set_lockout(make_async_lockout(guard_details.duration))
+	local GUARDING = {1,guard_details.duration}
 	local POST_GUARD = {1, 0.224} 
 	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
 	action:override_animation_frames(FRAMES)
@@ -84,6 +94,7 @@ function card_create_action(actor,props)
                 local reflected_damage = props.damage
                 local direction = actor:get_facing()
                 if not guarding_defense_rule.has_reflected then
+                    battle_helpers.spawn_visual_artifact(actor,actor:get_current_tile(),guard_hit_effect_texture,guard_hit_effect_animation_path,"DEFAULT",0,-30)
                     spawn_shockwave(actor, actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
                     guarding_defense_rule.has_reflected = true
                 end
