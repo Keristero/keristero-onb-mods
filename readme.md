@@ -13,6 +13,7 @@ the sources folder has assets used to create the mods and is only there for conv
 
 # Working mods
 - Cards
+    - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
     - BN5 Guard 1 / 2 / 3
     - MiniBomb
     - Protoman Charge Buster
@@ -25,7 +26,6 @@ the sources folder has assets used to create the mods and is only there for conv
 
 # Incomplete mods
 - Cards
-    - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
     - exodia-right-leg (for exodia PA once program advances are in)
 - Enemies
     - BN2 Popper
