@@ -1,10 +1,7 @@
 local texture = nil
 local battle_animation_path = nil
-
-function package_requires()
-    Engine.requires_card("com.keristero.card.protosword")
-    Engine.requires_card("com.keristero.card.Guard1")
-end
+local sword = include("/sword/sword.lua")
+local guard = include("/guard/guard.lua")
 
 player_info = {
     name="Protoman",
@@ -62,24 +59,18 @@ end
 
 function create_special_attack(player)
     print("execute special")
-    local props = Battle.CardProperties.from_card("com.keristero.card.Guard1")
+    local props = Battle.CardProperties:new()
     props.damage = 30+(player:get_attack_level()*10)
-    local reflect_action = Battle.CardAction.from_card("com.keristero.card.Guard1",player,props)
-    reflect_action.guard_animation = "PROTOGUARD"
-    --protoman's counter in BN5 lasts 24 frames (384ms)
-    local guard_duration = 0.384
-    local GUARDING = {1,guard_duration}
-	local POST_GUARD = {1, 0.224}
-	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
-	reflect_action:override_animation_frames(FRAMES)
-    reflect_action:set_lockout(make_async_lockout(guard_duration))
-    return reflect_action
+    guard.guard_duration = 0.384
+    guard.guard_animation = "PROTOGUARD"
+    local guard_action = guard.card_create_action(player,props)
+    return guard_action
 end
 
 function create_charged_attack(player)
     print("charged attack")
-    local props = Battle.CardProperties.from_card("com.keristero.card.protosword")
+    local props = Battle.CardProperties:new()
     props.damage = 30+(player:get_attack_level()*20)
-    local sword_action = Battle.CardAction.from_card("com.keristero.card.protosword",player,props)
+    local sword_action = sword.card_create_action(player,props)
     return sword_action
 end

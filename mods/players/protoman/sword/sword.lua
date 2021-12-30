@@ -2,9 +2,10 @@
 nonce = function() end
 
 local DAMAGE = 80 --default damage (should be overriden by caller with action.damage)
-local SLASH_TEXTURE = Engine.load_texture(_modpath.."spell_sword_slashes.png")
-local BLADE_TEXTURE = Engine.load_texture(_modpath.."spell_sword_blades.png")
-local AUDIO = Engine.load_audio(_modpath.."sfx.ogg")
+local sub_folder_path = _modpath.."/sword/" --folder we are inside
+local SLASH_TEXTURE = Engine.load_texture(sub_folder_path.."spell_sword_slashes.png")
+local BLADE_TEXTURE = Engine.load_texture(sub_folder_path.."spell_sword_blades.png")
+local AUDIO = Engine.load_audio(sub_folder_path.."sfx.ogg")
 
 local sword = {
 
@@ -20,7 +21,6 @@ sword.card_create_action = function(actor, props)
 				local hilt_sprite = hilt:sprite()
 				hilt_sprite:set_texture(actor:get_texture())
 				hilt_sprite:set_layer(-2)
-				hilt_sprite:enable_parent_shader(true)
 				
 				local hilt_anim = hilt:get_animation()
 				hilt_anim:copy_from(actor:get_animation())
