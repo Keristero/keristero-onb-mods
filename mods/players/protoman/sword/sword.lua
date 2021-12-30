@@ -6,22 +6,11 @@ local SLASH_TEXTURE = Engine.load_texture(_modpath.."spell_sword_slashes.png")
 local BLADE_TEXTURE = Engine.load_texture(_modpath.."spell_sword_blades.png")
 local AUDIO = Engine.load_audio(_modpath.."sfx.ogg")
 
-function package_init(package) 
-    package:declare_package_id("com.keristero.card.protosword")
-    package:set_icon_texture(Engine.load_texture(_modpath.."icon.png"))
-    package:set_preview_texture(Engine.load_texture(_modpath.."preview.png"))
-	package:set_codes({'S', '*'})
+local sword = {
 
-    local props = package:get_card_props()
-    props.shortname = "ProtoSwrd"
-    props.damage = 80
-    props.time_freeze = false
-    props.element = Element.Sword
-    props.description = "Cuts enmy in front! Range: 3"
-end
+}
 
-function card_create_action(actor, props)
-    print("in create_card_action()!")
+sword.card_create_action = function(actor, props)
     local action = Battle.CardAction.new(actor, "PLAYER_SWORD")
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
@@ -99,6 +88,7 @@ function create_slash(user, animation_state,damage)
 	end
 
 	Engine.play_audio(AUDIO, AudioPriority.Low)
-
 	return spell
 end
+
+return sword

@@ -1,12 +1,5 @@
 local battle_helpers = include("battle_helpers.lua")
 
-local debug = true
-function debug_print(text)
-    if debug then
-        print("[guard] " .. text)
-    end
-end
-
 local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
 local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
 local shield_texture = Engine.load_texture(_modpath .. "guard_attachment.png")
@@ -16,40 +9,24 @@ local guard_hit_effect_animation_path = _modpath .. "guard_hit.animation"
 local tink_sfx = Engine.load_audio(_modpath .. "tink.ogg")
 
 --variables that change for each version of the card
-local guard_details = {
+local guard = {
     name="Guard1",
     codes={'A',"D","K","*"},
     damage=50,
     duration=1.024,
-    guard_animation = "GUARD1"
+    guard_animation = "GUARD1",
+    description = "Repels an enemys attack"
 }
 
-function package_init(package)
-    local props = package:get_card_props()
-    --standard properties
-    props.shortname = guard_details.name
-    props.damage = guard_details.damage
-    props.time_freeze = false
-    props.element = Element.None
-    props.description = "Repels an enemys attack"
-
-    package:declare_package_id("com.keristero.card."..props.shortname)
-    package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
-    package:set_preview_texture(Engine.load_texture(_modpath .. "preview_"..props.shortname..".png"))
-    package:set_codes(guard_details.codes)
-end
-
-function card_create_action(actor,props)
-    debug_print("in create_card_action()!")
-
+function guard.card_create_action(actor,props)
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
     --special properties
-    action.guard_animation = guard_details.guard_animation
+    action.guard_animation = guard.guard_animation
 
 	--protoman's counter in BN5 lasts 24 frames (384ms)
 	--there are 224ms of the shield fading away where protoman can move
-	action:set_lockout(make_async_lockout(guard_details.duration))
-	local GUARDING = {1,guard_details.duration}
+	action:set_lockout(make_animation_lockout())
+	local GUARDING = {1,guard.duration}
 	local POST_GUARD = {1, 0.224} 
 	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
 	action:override_animation_frames(FRAMES)
@@ -141,3 +118,5 @@ function spawn_shockwave(owner, team, field, tile, direction,damage, wave_textur
 
     spawn_next()
 end
+
+return guard
