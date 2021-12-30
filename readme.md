@@ -16,13 +16,13 @@ the sources folder has assets used to create the mods and is only there for conv
     - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
     - BN5 Guard 1 / 2 / 3
     - MiniBomb
-    - Protoman Charge Buster
 - Enemies
     - BN6 Mettaur
     - BN5 Big Brute
     - BN5 Champy
     - Ultimate Warrior
 - Players
+    - Protoman
 
 # Incomplete mods
 - Cards
@@ -34,6 +34,3 @@ the sources folder has assets used to create the mods and is only there for conv
     - Colonel (needs bug fixes + changes)
     - Gutsman (No battle)
     - AOE Villager (No battle)
-    - Protoman  (Dependencies):
-        - Guard 1
-        - Protoman Charge Buster
