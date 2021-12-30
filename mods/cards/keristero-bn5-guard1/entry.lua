@@ -6,7 +6,6 @@ guard.codes = {'A',"D","K","*"}
 guard.damage = 50
 guard.duration = 1.024
 guard.guard_animation = "GUARD1"
-guard.description = "YEEET"
 
 function package_init(package)
     local props = package:get_card_props()

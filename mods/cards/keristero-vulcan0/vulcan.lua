@@ -86,7 +86,6 @@ vulcan.card_create_action = function(actor,props)
         local attachment_sprite = attachment:sprite()
         attachment_sprite:set_texture(attachment_texture)
         attachment_sprite:set_layer(-2)
-        attachment_sprite:enable_parent_shader(true)
 
         local attachment_animation = attachment:get_animation()
         attachment_animation:load(attachment_animation_path)

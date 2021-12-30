@@ -38,7 +38,6 @@ function guard.card_create_action(actor,props)
         local guard_sprite = guard_attachment:sprite()
         guard_sprite:set_texture(shield_texture)
         guard_sprite:set_layer(-2)
-        guard_sprite:enable_parent_shader(true)
 
         local guard_animation = guard_attachment:get_animation()
         guard_animation:load(sheild_animation_path)

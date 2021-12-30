@@ -86,7 +86,6 @@ vulcan.card_create_action = function(actor,props)
         local attachment_sprite = attachment:sprite()
         attachment_sprite:set_texture(attachment_texture)
         attachment_sprite:set_layer(-2)
-        attachment_sprite:enable_parent_shader(true)
 
         local attachment_animation = attachment:get_animation()
         attachment_animation:load(attachment_animation_path)
@@ -116,7 +115,6 @@ vulcan.card_create_action = function(actor,props)
         self:add_anim_action(#action.frames-5,function()
             --show lag animation for last 5 overriden frames
             attachment_animation:set_state("END")
-            debug_print(vulcan.hits.." hits!")
         end)
 
     end
