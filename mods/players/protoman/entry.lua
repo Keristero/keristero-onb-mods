@@ -61,9 +61,10 @@ function create_special_attack(player)
     print("execute special")
     local props = Battle.CardProperties:new()
     props.damage = 30+(player:get_attack_level()*10)
-    guard.guard_duration = 0.384
+    guard.duration = 0.384
     guard.guard_animation = "PROTOGUARD"
     local guard_action = guard.card_create_action(player,props)
+    guard_action:set_lockout(make_async_lockout(guard.duration*2))
     return guard_action
 end
 
