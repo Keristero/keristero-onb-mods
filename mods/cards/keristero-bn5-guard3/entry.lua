@@ -1,4 +1,4 @@
-local guard = include("guard.lua")
+local guard = include("/guard/guard.lua")
 
 --variables that change for each version of the card
 guard.name = "Guard3"
@@ -18,7 +18,7 @@ function package_init(package)
 
     package:declare_package_id("com.keristero.card."..props.shortname)
     package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
-    package:set_preview_texture(Engine.load_texture(_modpath .. "preview_"..props.shortname..".png"))
+    package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
     package:set_codes(guard.codes)
 end
 
