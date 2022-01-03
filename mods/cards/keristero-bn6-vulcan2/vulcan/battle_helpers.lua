@@ -28,8 +28,20 @@ function battle_helpers.find_targets_ahead(user)
     local field = user:get_field()
     local user_tile = user:get_current_tile()
     local user_team = user:get_team()
+    local user_facing = user:get_facing()
     local list = field:find_characters(function(character)
-        return character:get_current_tile():y() == user_tile:y() and character:get_team() ~= user_team
+        if character:get_current_tile():y() == user_tile:y() and character:get_team() ~= user_team then
+            if user_facing == Direction.Left then
+                if character:get_current_tile():x() < user_tile:x() then
+                    return true
+                end
+            elseif user_facing == Direction.Right then
+                if character:get_current_tile():x() > user_tile:x() then
+                    return true
+                end
+            end
+            return false
+        end
     end)
     return list
 end

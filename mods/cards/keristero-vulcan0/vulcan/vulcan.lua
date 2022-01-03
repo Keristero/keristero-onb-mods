@@ -1,12 +1,13 @@
 local battle_helpers = include("battle_helpers.lua")
+local sub_folder_path = _modpath.."/vulcan/" --folder we are inside
 
-local attachment_texture = Engine.load_texture(_modpath .. "attachment.png")
-local attachment_animation_path = _modpath .. "attachment.animation"
-local vulcan_impact_texture = Engine.load_texture(_modpath .. "vulcan_impact.png")
-local vulcan_impact_animation_path = _modpath .. "vulcan_impact.animation"
-local bullet_hit_texture = Engine.load_texture(_modpath .. "bullet_hit.png")
-local bullet_hit_animation_path = _modpath .. "bullet_hit.animation"
-local gun_sfx = Engine.load_audio(_modpath .. "gun.ogg")
+local attachment_texture = Engine.load_texture(sub_folder_path .. "attachment.png")
+local attachment_animation_path = sub_folder_path .. "attachment.animation"
+local vulcan_impact_texture = Engine.load_texture(sub_folder_path .. "vulcan_impact.png")
+local vulcan_impact_animation_path = sub_folder_path .. "vulcan_impact.animation"
+local bullet_hit_texture = Engine.load_texture(sub_folder_path .. "bullet_hit.png")
+local bullet_hit_animation_path = sub_folder_path .. "bullet_hit.animation"
+local gun_sfx = Engine.load_audio(sub_folder_path .. "gun.ogg")
 
 local debug = true
 function debug_print(text)
@@ -27,23 +28,6 @@ local vulcan = {
     card_class=CardClass.Standard
 }
 
-function package_init(package)
-    local props = package:get_card_props()
-    --standard properties
-    props.shortname = vulcan.name
-    props.damage = vulcan.damage
-    props.time_freeze = vulcan.time_freeze
-    props.element = Element.None
-    props.description = vulcan.description
-    props.can_boost = vulcan.can_boost
-    props.card_class = vulcan.card_class
-
-    package:declare_package_id("com.keristero.card."..props.shortname)
-    package:set_icon_texture(Engine.load_texture(_modpath .. "icon.png"))
-    package:set_preview_texture(Engine.load_texture(_modpath .. "preview.png"))
-    package:set_codes(vulcan.codes)
-end
-
 vulcan.card_create_action = function(actor,props)
     local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
 	action:set_lockout(make_animation_lockout())
@@ -55,7 +39,7 @@ vulcan.card_create_action = function(actor,props)
     local frame_prepared = false
     local hit_props = HitProps.new(
         props.damage, 
-        Hit.Impact, 
+        Hit.Impact | Hit.Flinch, 
         Element.None,
         actor:get_context(),
         Drag.None
