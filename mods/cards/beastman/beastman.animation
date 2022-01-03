@@ -1,0 +1,36 @@
+animation state="intro"
+frame duration="0.05" x="65" y="68" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="95" y="68" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="125" y="68" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="155" y="68" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="60" y="135" w="61" h="57" originx="28" originy="49"
+frame duration="0.05" x="121" y="135" w="61" h="57" originx="28" originy="49"
+frame duration="0.05" x="182" y="135" w="62" h="57" originx="28" originy="49"
+frame duration="0.05" x="0" y="197" w="61" h="57" originx="28" originy="49"
+frame duration="0.05" x="61" y="197" w="61" h="57" originx="28" originy="49"
+frame duration="0.05" x="0" y="68" w="65" h="67" originx="37" originy="59"
+frame duration="0.05" x="0" y="0" w="65" h="68" originx="37" originy="60"
+frame duration="0.15" x="65" y="0" w="65" h="68" originx="37" originy="60"
+frame duration="0.05" x="130" y="0" w="66" h="68" originx="37" originy="61"
+frame duration="0.05" x="185" y="68" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="196" y="0" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="0" y="135" w="30" h="62" originx="15" originy="61"
+frame duration="0.05" x="30" y="135" w="30" h="62" originx="15" originy="61"
+
+animation state="CLAW_DOWN_RIGHT"
+frame duration="0.1" x="0" y="254" w="34" h="31" originx="17" originy="15"
+
+animation state="CLAW_UP_RIGHT"
+frame duration="0.1" x="0" y="254" w="34" h="31" originx="17" originy="15" flipy="1"
+
+animation state="head"
+frame duration="0.05" x="122" y="197" w="45" h="47" originx="20" originy="42"
+
+animation state="claw_down_right_dark"
+frame duration="0.1" x="34" y="254" w="34" h="31" originx="17" originy="15"
+
+animation state="CLAW_UP_RIGHT_DARK"
+frame duration="0.1" x="34" y="254" w="34" h="31" originx="17" originy="15" flipy="1"
+
+animation state="head_dark"
+frame duration="0.05" x="167" y="197" w="45" h="47" originx="20" originy="42"
