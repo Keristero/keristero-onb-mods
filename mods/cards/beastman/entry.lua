@@ -274,7 +274,7 @@ function drop_trace_fx(target_artifact)
 
     fx.update_func = function(self, dt)
 
-        self.lifetime = math.max(0, self.lifetime-math.floor(dt*500))
+        self.lifetime = math.max(0, self.lifetime-math.floor(dt*1000))
         self:set_color(Color.new(0, 0, 0, self.lifetime))
 
         if self.lifetime == 0 then 
