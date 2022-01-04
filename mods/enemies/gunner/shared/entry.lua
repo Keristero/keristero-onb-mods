@@ -1,4 +1,5 @@
 local shared_folder_path = _modpath.."../shared/"
+local battle_helpers = include("battle_helpers.lua")
 
 local enemy_info = {
     name = "Gunner"
@@ -15,16 +16,6 @@ local reticle_texture = Engine.load_texture(shared_folder_path .. "reticle.png")
 local reticle_animation_path = shared_folder_path .. "reticle.animation"
 local ground_bullet_texture = Engine.load_texture(shared_folder_path .. "ground_bullet.png")
 local ground_bullet_animation_path = shared_folder_path .. "ground_bullet.animation"
-
-local function find_targets_ahead(user)
-    local field = user:get_field()
-    local user_tile = user:get_current_tile()
-    local user_team = user:get_team()
-    local list = field:find_characters(function(character)
-        return character:get_current_tile():y() == user_tile:y() and character:get_team() ~= user_team
-    end)
-    return list
-end
 
 function spell_delayed_bullet(character,target_tile,damage)
     print('created bullet')
@@ -136,6 +127,9 @@ function action_fire(character,target_tile)
     end
     action.update_func = function (self)
     end
+    action.action_end_func = function (self)
+        character.current_scan_action = nil
+    end
     return action
 end
 
@@ -175,7 +169,6 @@ function action_scan(character)
         print('action done mate')
         if action.reticle_spell then
             action.reticle_spell:delete()
-            character.current_scan_action = nil
         end
     end
     return action
@@ -218,7 +211,7 @@ local function package_init(self)
         local current_animation = self:get_animation()
         local current_animation_state = current_animation:get_state()
         if current_animation_state == "IDLE" and not self.current_scan_action then
-            local targets = find_targets_ahead(character)
+            local targets = battle_helpers.find_targets_ahead(character)
             if #targets > 0 then
                 local action = action_scan(character)
                 character.current_scan_action = action
