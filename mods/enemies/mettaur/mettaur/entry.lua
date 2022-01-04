@@ -66,7 +66,7 @@ function package_init(self)
     self:set_texture(self.texture, true)
     self:set_height(character_info.height)
     self:share_tile(false)
-    self:set_explosion_behavior(4, 1, false)
+    self:set_explosion_behavior(2, 1, false)
     self:set_offset(0, 0)
     self:set_palette(Engine.load_texture(_modpath.."battle_v1.palette.png"))
 

@@ -39,7 +39,7 @@ function package_init(self)
     self:set_texture(self.texture, true)
     self:set_height(character_info.height)
     self:share_tile(false)
-    self:set_explosion_behavior(32, 1.0, false)
+    self:set_explosion_behavior(32, 1.0, true)
     self:set_offset(0, 0)
 
     --Initial state
