@@ -8,19 +8,19 @@ local throw_card = {
 
 }
 
-throw_card.card_create_action = function(actor, props)
-    local action = Battle.CardAction.new(actor, "PLAYER_SWORD")
+throw_card.card_create_action = function(user, props)
+    local action = Battle.CardAction.new(user, "PLAYER_SWORD")
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
 		self:add_anim_action(3,
 			function()
 				local hilt = self:add_attachment("HILT")
 				local hilt_sprite = hilt:sprite()
-				hilt_sprite:set_texture(actor:get_texture())
+				hilt_sprite:set_texture(user:get_texture())
 				hilt_sprite:set_layer(-2)
 				
 				local hilt_anim = hilt:get_animation()
-				hilt_anim:copy_from(actor:get_animation())
+				hilt_anim:copy_from(user:get_animation())
 				hilt_anim:set_state("HAND")
 			end
 		)

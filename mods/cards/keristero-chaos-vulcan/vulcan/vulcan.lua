@@ -28,12 +28,12 @@ local vulcan = {
     card_class=CardClass.Standard
 }
 
-vulcan.card_create_action = function(actor,props)
-    local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
+vulcan.card_create_action = function(user,props)
+    local action = Battle.CardAction.new(user, "PLAYER_SHOOTING")
 	action:set_lockout(make_animation_lockout())
     action.shots_animated = vulcan.shots_animated
     action.hits = vulcan.hits
-    local vulcan_direction = actor:get_facing()
+    local vulcan_direction = user:get_facing()
     local f_padding = {1,0.032}
     action.frames = {f_padding,f_padding,f_padding,f_padding,f_padding,f_padding,f_padding}
     local frame_prepared = false
@@ -41,7 +41,7 @@ vulcan.card_create_action = function(actor,props)
         props.damage, 
         Hit.Impact | Hit.Flinch, 
         Element.None,
-        actor:get_context(),
+        user:get_context(),
         Drag.None
     )
 
@@ -90,9 +90,9 @@ vulcan.card_create_action = function(actor,props)
                 return
                 end
                 local hit_tile = target:get_current_tile()
-                create_vulcan_damage(actor,vulcan_direction,hit_tile,hit_props)
-                battle_helpers.spawn_visual_artifact(actor,hit_tile,vulcan_impact_texture,vulcan_impact_animation_path,"IDLE",-10,-55)
-                battle_helpers.spawn_visual_artifact(actor,hit_tile,bullet_hit_texture,bullet_hit_animation_path,"HIT",math.random(-20,20),math.random(-55,-30))
+                create_vulcan_damage(user,vulcan_direction,hit_tile,hit_props)
+                battle_helpers.spawn_visual_artifact(user,hit_tile,vulcan_impact_texture,vulcan_impact_animation_path,"IDLE",-10,-55)
+                battle_helpers.spawn_visual_artifact(user,hit_tile,bullet_hit_texture,bullet_hit_animation_path,"HIT",math.random(-20,20),math.random(-55,-30))
             end)
         end
 

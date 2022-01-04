@@ -20,8 +20,8 @@ local bomb = {
     codes = {"B","L","R","*"}
 }
 
-bomb.card_create_action = function(actor,props)
-    local action = Battle.CardAction.new(actor, "PLAYER_THROW")
+bomb.card_create_action = function(user,props)
+    local action = Battle.CardAction.new(user, "PLAYER_THROW")
 	action:set_lockout(make_animation_lockout())
     local override_frames = {{1,0.064},{2,0.064},{3,0.064},{4,0.064},{5,0.064}}
     local frame_data = make_frame_data(override_frames)
@@ -31,7 +31,7 @@ bomb.card_create_action = function(actor,props)
         props.damage,
         Hit.Impact | Hit.Flinch | Hit.Flash, 
         props.element,
-        actor:get_context(),
+        user:get_context(),
         Drag.None
     )
 
