@@ -16,6 +16,7 @@ the sources folder has assets used to create the mods and is only there for conv
     - Vulcan 0 / 1 / 2 / 3 / Super / Chaos
     - BN5 Guard 1 / 2 / 3
     - MiniBomb
+    - BeastMan
 - Enemies
     - BN6 Mettaur
     - BN5 Big Brute
@@ -26,7 +27,7 @@ the sources folder has assets used to create the mods and is only there for conv
 
 # Incomplete mods
 - Cards
-    - exodia-right-leg (for exodia PA once program advances are in)
+    - exodia cards
 - Enemies
     - BN2 Popper
     - BN6 Gunner

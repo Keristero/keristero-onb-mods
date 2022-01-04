@@ -27,7 +27,8 @@
         "Blocks",
         "include",
         "CardClass",
-        "frames"
+        "frames",
+        "Input"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"
