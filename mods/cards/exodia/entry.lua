@@ -34,11 +34,11 @@ function package_init(package)
 	end
 end
 
-function card_create_action(actor,props)
+function card_create_action(user,props)
     local action = nil
     if fully_assembled then
         print("you win")
-        action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
+        action = Battle.CardAction.new(user, "PLAYER_SHOOTING")
     end
     return action
 end

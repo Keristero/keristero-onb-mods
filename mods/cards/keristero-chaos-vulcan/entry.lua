@@ -25,8 +25,8 @@ function package_init(package)
     package:set_codes(vulcan.codes)
 end
 
-function card_create_action(actor,props)
+function card_create_action(user,props)
     vulcan.hits = math.random(1,99)
     vulcan.shots_animated = vulcan.hits*2
-    return vulcan.card_create_action(actor,props)
+    return vulcan.card_create_action(user,props)
 end

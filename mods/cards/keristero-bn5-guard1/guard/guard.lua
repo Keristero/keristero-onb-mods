@@ -21,8 +21,8 @@ local guard = {
     description = "Repels an enemys attack"
 }
 
-function guard.card_create_action(actor,props)
-    local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
+function guard.card_create_action(user,props)
+    local action = Battle.CardAction.new(user, "PLAYER_SHOOTING")
     --special properties
     action.guard_animation = guard.guard_animation
 
@@ -72,10 +72,10 @@ function guard.card_create_action(actor,props)
                 judge:block_damage()
                 Engine.play_audio(tink_sfx, AudioPriority.Highest)
                 local reflected_damage = props.damage
-                local direction = actor:get_facing()
+                local direction = user:get_facing()
                 if not guarding_defense_rule.has_reflected then
-                    battle_helpers.spawn_visual_artifact(actor,actor:get_current_tile(),guard_hit_effect_texture,guard_hit_effect_animation_path,"DEFAULT",0,-30)
-                    spawn_shockwave(actor, actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
+                    battle_helpers.spawn_visual_artifact(user,user:get_current_tile(),guard_hit_effect_texture,guard_hit_effect_animation_path,"DEFAULT",0,-30)
+                    spawn_shockwave(user, user:get_team(),user:get_field(),user:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
                     guarding_defense_rule.has_reflected = true
                 end
             end
