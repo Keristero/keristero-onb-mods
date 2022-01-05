@@ -2,7 +2,7 @@ local texture = nil
 local battle_animation_path = nil
 local battle_helpers = include("battle_helpers.lua")
 local falling_star = include("/falling_star/falling_star.lua")
-local guard = include("/guard/guard.lua")
+local sparkley_arrow = include("/sparkley_arrow/sparkley_arrow.lua")
 
 local player_info = {
     name="Starman",
@@ -50,6 +50,8 @@ function player_init(player)
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
     player.special_attack_func = create_special_attack
+    player.special_attack_cooldown_frames = 450
+    player.remaining_special_cooldown = 0
     player.movement_sparkles = 3
     player:set_air_shoe(true)
 
@@ -71,7 +73,7 @@ spawn_movement_sparkles = function (player,current_tile)
             player.movement_sparkles = player.movement_sparkles - 1
         end
     end
-    if not player:is_moving() then
+    if not player:is_moving() and player.remaining_special_cooldown == 0 then
         player.movement_sparkles = 3
     end
 end
@@ -83,19 +85,21 @@ end
 
 function create_special_attack(player)
     print("execute special")
-    local props = Battle.CardProperties:new()
-    props.damage = 30+(player:get_attack_level()*10)
-    guard.duration = 0.384
-    guard.guard_animation = "PROTOGUARD"
-    local guard_action = guard.card_create_action(player,props)
-    guard_action:set_lockout(make_async_lockout(guard.duration*2))
-    return guard_action
+    local sparkley_arrow_action = nil
+    if player.remaining_special_cooldown == 0 then
+        local props = Battle.CardProperties:new()
+        props.damage = player:get_attack_level()*10
+        sparkley_arrow_action = sparkley_arrow.card_create_action(player,props)
+        player.remaining_special_cooldown = player.special_attack_cooldown_frames
+    end
+    return sparkley_arrow_action
 end
 
 function create_charged_attack(player)
     print("charged attack")
     local props = Battle.CardProperties:new()
-    props.damage = 30+(player:get_attack_level()*30)
+    props.damage = 25+(player:get_attack_level()*5)
+    falling_star.number_of_stars = math.min(3,math.max(1,math.floor((player:get_rapid_level()/2)+1)))
     local falling_star_action = falling_star.card_create_action(player,props)
     return falling_star_action
 end

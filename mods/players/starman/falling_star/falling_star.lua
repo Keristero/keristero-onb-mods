@@ -7,7 +7,8 @@ local starfall_sfx = Engine.load_audio(sub_folder_path.."starfall.ogg")
 
 --variables that change for each version of the card
 local falling_star = {
-    damage=50
+    damage=50,
+    number_of_stars=3
 }
 
 function falling_star.card_create_action(user,props)
@@ -17,18 +18,16 @@ function falling_star.card_create_action(user,props)
 		self:add_anim_action(1,function()
             local field = user:get_field()
             local target_tile = user:get_tile(user:get_facing(),3)
-            if target_tile then
-                local falling_star = spell_falling_star(user,props)
-                field:spawn(falling_star, target_tile:x(), target_tile:y())
-            end
+            spell_falling_star(user,props,target_tile,falling_star.number_of_stars)
 		end)
-        Engine.play_audio(starfall_sfx, AudioPriority.Highest)
     end
     return action
 end
 
-function spell_falling_star(character,props)
+function spell_falling_star(character,props,target_tile,stars_remaining)
     print('created star')
+    Engine.play_audio(starfall_sfx, AudioPriority.Highest)
+    local field = character:get_field()
     local facing = character:get_facing()
     local team = character:get_team()
     local spell = Battle.Spell.new(team)
@@ -41,6 +40,8 @@ function spell_falling_star(character,props)
     anim:refresh(sprite)
     anim:set_playback(Playback.Loop)
     spell.frames_before_impact = 32
+    spell.frames_before_spawning_next_star = 15
+    spell.next_star_spawned = false
     spell.warning_frames = 10
     if facing == Direction.Left then
         spell.starting_x_offset = spell.starting_x_offset * -1
@@ -63,6 +64,15 @@ function spell_falling_star(character,props)
     )
     spell.update_func = function (self)
         local tile = spell:get_current_tile()
+        if self.frames_before_spawning_next_star > 0 then
+            self.frames_before_spawning_next_star = self.frames_before_spawning_next_star - 1
+        else
+            if not spell.next_star_spawned then
+                --spawn next star with no target (will be randomized)
+                spell_falling_star(character,props,nil,stars_remaining-1)
+                spell.next_star_spawned = true
+            end
+        end
         if self.warning_frames > 0 then
             tile:highlight(Highlight.Solid)
             self.warning_frames = self.warning_frames - 1
@@ -78,13 +88,22 @@ function spell_falling_star(character,props)
         else
             tile:attack_entities(self)
             spell:delete()
-            for i = 1, 3, 1 do
-                spawn_impact_sparkles(character,tile)
-            end
+            spawn_impact_sparkles(character,tile)
         end
     end
     spell.can_move_to_func = function ()
         return true
+    end
+    --if target tile is nil, find a random target from opposing team
+    if not target_tile then
+        local enemies = battle_helpers.find_all_enemies(character)
+        if #enemies > 0 then
+            target_tile = enemies[math.random(1,#enemies)]:get_current_tile()
+        end
+    end
+    --if we have a target tile, spawn the star
+    if target_tile then
+        field:spawn(falling_star, target_tile:x(), target_tile:y())
     end
     return spell
 end
