@@ -1,3 +1,4 @@
+local battle_helpers = include('battle_helpers.lua')
 local sub_folder_path = _modpath.."/falling_star/" --folder we are inside
 
 local starman_effects_texture = Engine.load_texture(sub_folder_path .. "effects.png")
@@ -68,7 +69,7 @@ function spell_falling_star(character,props)
         end
         if self.frames_before_impact > 0 then
             if self.frames_before_impact % 3 == 0 then
-                drop_trace_fx(spell)
+                battle_helpers.drop_trace_fx(spell,255)
             end
             spell.x_offset = spell.x_offset - spell.x_movement
             spell.y_offset = spell.y_offset - spell.y_movement
@@ -88,56 +89,14 @@ function spell_falling_star(character,props)
     return spell
 end
 
-function drop_trace_fx(target_artifact)
-    local fx = Battle.Artifact.new()
-    local anim = target_artifact:get_animation()
-    local field = target_artifact:get_field()
-    local offset = target_artifact:get_offset()
-    local texture = target_artifact:get_texture()
-    local sprite = target_artifact:sprite()
-    fx:set_facing(target_artifact:get_facing())
-    fx:set_texture(texture, true)
-    fx:get_animation():copy_from(anim)
-    fx:get_animation():set_state(anim:get_state())
-    fx:set_offset(offset.x,offset.y)
-    fx:get_animation():refresh(fx:sprite())
-    fx.lifetime = 255
-
-
-    fx.update_func = function(self, dt)
-        self.lifetime = math.max(0, self.lifetime-math.floor(dt*1000))
-        self:set_color(Color.new(0, 0, 0, self.lifetime))
-
-        if self.lifetime == 0 then 
-            self:erase()
-        end
-    end
-
-	local tile = target_artifact:get_current_tile()
-    field:spawn(fx, tile:x(), tile:y())
-end
-
 function spawn_impact_sparkles(character,target_tile)
-    local visual_artifact = Battle.Artifact.new()
-    visual_artifact:set_texture(starman_effects_texture,true)
-    local anim = visual_artifact:get_animation()
-    local sprite = visual_artifact:sprite()
-    local field = character:get_field()
-    local facing = character:get_facing()
-    anim:load(starman_effects_texture_animation_path)
-    anim:set_state("SPARKLE")
-    anim:on_complete(function()
-        visual_artifact:delete()
-    end)
-    if facing == Direction.Left then
-        position_x = position_x *-1
-    end
-    visual_artifact:set_facing(facing)
-    visual_artifact:set_offset(math.random(-40,40),math.random(-60,0))
-    anim:refresh(sprite)
-    field:spawn(visual_artifact, target_tile:x(), target_tile:y())
-    if math.random(1,2) == 2 then
-        visual_artifact:set_facing(Direction.reverse(facing))
+    for i = 1, 3, 1 do
+        local x_offset = math.random(-40,40)
+        local y_offset = math.random(-60,0)
+        local artifact = battle_helpers.spawn_visual_artifact(character,target_tile,starman_effects_texture,starman_effects_texture_animation_path,"SPARKLE",x_offset,y_offset)
+        if math.random(1,2) == 2 then
+            artifact:set_facing(Direction.reverse(artifact:get_facing()))
+        end
     end
 end
 
