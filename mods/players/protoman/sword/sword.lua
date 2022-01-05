@@ -11,19 +11,19 @@ local sword = {
 
 }
 
-sword.card_create_action = function(actor, props)
-    local action = Battle.CardAction.new(actor, "PLAYER_SWORD")
+sword.card_create_action = function(user, props)
+    local action = Battle.CardAction.new(user, "PLAYER_SWORD")
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
 		self:add_anim_action(3,
 			function()
 				local hilt = self:add_attachment("HILT")
 				local hilt_sprite = hilt:sprite()
-				hilt_sprite:set_texture(actor:get_texture())
+				hilt_sprite:set_texture(user:get_texture())
 				hilt_sprite:set_layer(-2)
 				
 				local hilt_anim = hilt:get_animation()
-				hilt_anim:copy_from(actor:get_animation())
+				hilt_anim:copy_from(user:get_animation())
 				hilt_anim:set_state("HILT")
 
 				local blade = hilt:add_attachment("ENDPOINT")
@@ -45,9 +45,9 @@ sword.card_create_action = function(actor, props)
 				sharebox1:set_hit_props(sword:copy_hit_props())
 				local sharebox2 = Battle.SharedHitbox.new(sword, 0.15)
 				sharebox2:set_hit_props(sword:copy_hit_props())
-				actor:get_field():spawn(sharebox1, tile:get_tile(Direction.Up, 1))
-				actor:get_field():spawn(sword, tile)
-				actor:get_field():spawn(sharebox2, tile:get_tile(Direction.Down, 1))
+				user:get_field():spawn(sharebox1, tile:get_tile(Direction.Up, 1))
+				user:get_field():spawn(sword, tile)
+				user:get_field():spawn(sharebox2, tile:get_tile(Direction.Down, 1))
 				local fx = Battle.Artifact.new()
 				fx:set_facing(sword:get_facing())
 				local anim = fx:get_animation()
@@ -60,7 +60,7 @@ sword.card_create_action = function(actor, props)
 						sword:erase()
 					end
 				)
-				actor:get_field():spawn(fx, tile)
+				user:get_field():spawn(fx, tile)
 			end
 		)
 	end

@@ -18,6 +18,6 @@ function package_init(package)
     package:set_codes({"E"})
 end
 
-function card_create_action(actor,props)
+function card_create_action(user,props)
     return nil
 end
