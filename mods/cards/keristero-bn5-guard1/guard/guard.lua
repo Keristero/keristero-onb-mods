@@ -21,8 +21,8 @@ local guard = {
     description = "Repels an enemys attack"
 }
 
-function guard.card_create_action(actor,props)
-    local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
+function guard.card_create_action(user,props)
+    local action = Battle.CardAction.new(user, "PLAYER_SHOOTING")
     --special properties
     action.guard_animation = guard.guard_animation
 
@@ -32,6 +32,9 @@ function guard.card_create_action(actor,props)
 	local GUARDING = {1,guard.duration}
 	local POST_GUARD = {1, 0.224} 
 	local FRAMES = make_frame_data({GUARDING,POST_GUARD})
+    action.action_end_func = function ()
+        user:remove_defense_rule(action.guarding_defense_rule)
+    end
 	action:override_animation_frames(FRAMES)
 
     action.execute_func = function(self, user)
@@ -46,7 +49,7 @@ function guard.card_create_action(actor,props)
         guard_animation:load(sheild_animation_path)
         guard_animation:set_state(action.guard_animation)
 
-        local guarding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
+        action.guarding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
 
 		self:add_anim_action(1,function()
 			guarding = true
@@ -55,10 +58,10 @@ function guard.card_create_action(actor,props)
 		self:add_anim_action(2,function()
 			guard_animation:set_state("FADE")
 			guarding = false
-            user:remove_defense_rule(guarding_defense_rule)
+            user:remove_defense_rule(action.guarding_defense_rule)
 		end)
 
-        guarding_defense_rule.can_block_func = function(judge, attacker, defender)
+        action.guarding_defense_rule.can_block_func = function(judge, attacker, defender)
             if not guarding then 
                 return 
             end
@@ -72,16 +75,16 @@ function guard.card_create_action(actor,props)
                 judge:block_damage()
                 Engine.play_audio(tink_sfx, AudioPriority.Highest)
                 local reflected_damage = props.damage
-                local direction = actor:get_facing()
-                if not guarding_defense_rule.has_reflected then
-                    battle_helpers.spawn_visual_artifact(actor,actor:get_current_tile(),guard_hit_effect_texture,guard_hit_effect_animation_path,"DEFAULT",0,-30)
-                    spawn_shockwave(actor, actor:get_team(),actor:get_field(),actor:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
-                    guarding_defense_rule.has_reflected = true
+                local direction = user:get_facing()
+                if not action.guarding_defense_rule.has_reflected then
+                    battle_helpers.spawn_visual_artifact(user,user:get_current_tile(),guard_hit_effect_texture,guard_hit_effect_animation_path,"DEFAULT",0,-30)
+                    spawn_shockwave(user, user:get_team(),user:get_field(),user:get_tile(direction, 1), direction,reflected_damage, wave_texture,wave_sfx,0.2)
+                    action.guarding_defense_rule.has_reflected = true
                 end
             end
         end
 
-        user:add_defense_rule(guarding_defense_rule)
+        user:add_defense_rule(action.guarding_defense_rule)
     end
 
     return action
