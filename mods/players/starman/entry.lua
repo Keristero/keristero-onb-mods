@@ -1,7 +1,7 @@
 local texture = nil
 local battle_animation_path = nil
---local sword = include("/sword/sword.lua")
---local guard = include("/guard/guard.lua")
+local battle_helpers = include("battle_helpers.lua")
+local falling_star = include("/falling_star/falling_star.lua")
 
 local player_info = {
     name="Starman",
@@ -15,6 +15,9 @@ local player_info = {
     height=60,
     charge_buster_glow_y_offset=-30
 }
+
+local starman_effects_texture = Engine.load_texture(_modpath .. "effects.png")
+local starman_effects_texture_animation_path = _modpath.. "effects.animation"
 
 function package_init(package) 
     battle_animation_path = _modpath.."battle.animation"
@@ -46,9 +49,28 @@ function player_init(player)
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
     player.special_attack_func = create_special_attack
+    player.movement_sparkles = 3
 
-    player.update_func = function(self, dt) 
+    player.update_func = function(self, dt)
+        local current_tile = player:get_current_tile()
+        spawn_movement_sparkles(player,current_tile)
         -- nothing in particular
+    end
+end
+
+spawn_movement_sparkles = function (player,current_tile)
+    --spawn movement sparkles if the player is moving
+    if player:is_moving() then
+        if player.movement_sparkles > 0 then
+            local artifact = battle_helpers.spawn_visual_artifact(player,current_tile,starman_effects_texture,starman_effects_texture_animation_path,"SPARKLE",math.random(-40,40),math.random(-90,-30))
+            if math.random(1,2) == 2 then
+                artifact:set_facing(Direction.reverse(artifact:get_facing()))
+            end
+            player.movement_sparkles = player.movement_sparkles - 1
+        end
+    end
+    if not player:is_moving() then
+        player.movement_sparkles = 3
     end
 end
 
@@ -64,5 +86,8 @@ end
 
 function create_charged_attack(player)
     print("charged attack")
-    return Battle.Buster.new(player, true, player:get_attack_level()*10)
+    local props = Battle.CardProperties:new()
+    props.damage = 30+(player:get_attack_level()*20)
+    local falling_star_action = falling_star.card_create_action(player,props)
+    return falling_star_action
 end

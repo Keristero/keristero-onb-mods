@@ -218,7 +218,6 @@ local function package_init(self)
         end
     end
     self.battle_start_func = function (self)
-        self.ai_state = "idle"
         debug_print("battle_start_func called")
     end
     self.battle_end_func = function (self)
