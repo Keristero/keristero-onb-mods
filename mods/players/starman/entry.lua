@@ -2,6 +2,7 @@ local texture = nil
 local battle_animation_path = nil
 local battle_helpers = include("battle_helpers.lua")
 local falling_star = include("/falling_star/falling_star.lua")
+local guard = include("/guard/guard.lua")
 
 local player_info = {
     name="Starman",
@@ -9,10 +10,10 @@ local player_info = {
     description="He thinks he'd blow our minds",
     buster_damage=5,
     charge_buster_damage=100,
-    speed=4,
+    speed=1,
     hp=1000,
     element=Element.None,
-    height=60,
+    height=80,
     charge_buster_glow_y_offset=-30
 }
 
@@ -50,6 +51,7 @@ function player_init(player)
     player.charged_attack_func = create_charged_attack
     player.special_attack_func = create_special_attack
     player.movement_sparkles = 3
+    player:set_air_shoe(true)
 
     player.update_func = function(self, dt)
         local current_tile = player:get_current_tile()
@@ -81,13 +83,19 @@ end
 
 function create_special_attack(player)
     print("execute special")
-    return nil
+    local props = Battle.CardProperties:new()
+    props.damage = 30+(player:get_attack_level()*10)
+    guard.duration = 0.384
+    guard.guard_animation = "PROTOGUARD"
+    local guard_action = guard.card_create_action(player,props)
+    guard_action:set_lockout(make_async_lockout(guard.duration*2))
+    return guard_action
 end
 
 function create_charged_attack(player)
     print("charged attack")
     local props = Battle.CardProperties:new()
-    props.damage = 30+(player:get_attack_level()*20)
+    props.damage = 30+(player:get_attack_level()*30)
     local falling_star_action = falling_star.card_create_action(player,props)
     return falling_star_action
 end

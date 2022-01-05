@@ -55,7 +55,7 @@ function spell_falling_star(character,props)
     spell:set_offset(spell.x_offset,spell.y_offset)
     spell:set_hit_props(HitProps.new(
         props.damage,
-        Hit.Flash,
+        Hit.Impact,
         Element.None,
         character:get_context(),
         Drag.None)
