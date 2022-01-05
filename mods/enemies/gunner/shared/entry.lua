@@ -128,7 +128,6 @@ function action_fire(character,target_tile)
     action.update_func = function (self)
     end
     action.action_end_func = function (self)
-        character.current_scan_action = nil
     end
     return action
 end
@@ -198,22 +197,21 @@ local function package_init(self)
     self.animation:set_playback(Playback.Loop)
     self.bullet_damage = 10
 
-    local scanning_interrupt = function ()
-        local current_animation = self:get_animation()
-        local current_animation_state = current_animation:get_state()
-        if current_animation_state == "SCANNING" then
-            self.current_scan_action:end_action()
+    local scanning_interrupt = function (character)
+        if character.current_scan_action then
+            character.current_scan_action:end_action()
         end
     end
     self:register_status_callback(Hit.Stun | Hit.Drag,scanning_interrupt)
 
     self.update_func = function (character,dt)
-        local current_animation = self:get_animation()
-        local current_animation_state = current_animation:get_state()
-        if current_animation_state == "IDLE" and not self.current_scan_action then
+        if not character.current_scan_action then
             local targets = battle_helpers.find_targets_ahead(character)
             if #targets > 0 then
                 local action = action_scan(character)
+                action.action_end_func = function ()
+                    character.current_scan_action = nil
+                end
                 character.current_scan_action = action
                 character:card_action_event(action, ActionOrder.Voluntary)
             end
@@ -231,11 +229,7 @@ local function package_init(self)
    end
     self.delete_func = function (self)
         debug_print("delete_func called")
-        local current_animation = self:get_animation()
-        local current_animation_state = current_animation:get_state()
-        if current_animation_state == "SCANNING" then
-            self.current_scan_action:end_action()
-        end
+        scanning_interrupt(self)
     end
 end
 
