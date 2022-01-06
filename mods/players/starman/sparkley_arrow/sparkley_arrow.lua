@@ -1,5 +1,5 @@
 local battle_helpers = include('battle_helpers.lua')
-local sub_folder_path = _modpath.."/arrow/" --folder we are inside
+local sub_folder_path = _modpath.."/sparkley_arrow/" --folder we are inside
 
 local starman_effects_texture = Engine.load_texture(sub_folder_path .. "effects.png")
 local starman_effects_texture_animation_path = sub_folder_path.. "effects.animation"
@@ -41,7 +41,7 @@ function spell_sparkley_arrow(character,props)
     anim:refresh(sprite)
     anim:set_playback(Playback.Loop)
     spell:set_facing(facing)
-    spell:set_offset(0,-60)
+    spell:set_offset(0,-75)
     spell:set_hit_props(HitProps.new(
         props.damage,
         Hit.Stun,
@@ -50,7 +50,7 @@ function spell_sparkley_arrow(character,props)
         Drag.None)
     )
     spell.started_sliding = false
-    spell.on_attack_func = function ()
+    spell.attack_func = function ()
         spawn_arrow_sparkles(character,spell:get_current_tile())
         spell:delete()
     end
@@ -69,7 +69,7 @@ function spell_sparkley_arrow(character,props)
     spell.can_move_to_func = function ()
         return true
     end
-    field:spawn(arrow, tile:x(), tile:y())
+    field:spawn(spell, tile:x(), tile:y())
     spawn_arrow_sparkles(character,tile)
     return spell
 end

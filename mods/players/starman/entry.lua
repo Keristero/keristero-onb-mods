@@ -8,7 +8,7 @@ local player_info = {
     name="Starman",
     author="keristero",
     description="He thinks he'd blow our minds",
-    buster_damage=5,
+    buster_damage=1,
     charge_buster_damage=100,
     speed=1,
     hp=1000,
@@ -46,11 +46,12 @@ function player_init(player)
     texture = Engine.load_texture(battle_texture_path)
     player:set_texture(texture, true)
     player:set_fully_charged_color(Color.new(200,150,0,200))
+    player:set_charge_level(5)
     player:set_charge_position(0,player_info.charge_buster_glow_y_offset)
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
     player.special_attack_func = create_special_attack
-    player.special_attack_cooldown_frames = 450
+    player.special_attack_cooldown_frames = 360
     player.remaining_special_cooldown = 0
     player.movement_sparkles = 3
     player:set_air_shoe(true)
@@ -58,6 +59,9 @@ function player_init(player)
     player.update_func = function(self, dt)
         local current_tile = player:get_current_tile()
         spawn_movement_sparkles(player,current_tile)
+        if player.remaining_special_cooldown > 0 then
+            player.remaining_special_cooldown = player.remaining_special_cooldown - 1
+        end
         -- nothing in particular
     end
 end
@@ -88,9 +92,10 @@ function create_special_attack(player)
     local sparkley_arrow_action = nil
     if player.remaining_special_cooldown == 0 then
         local props = Battle.CardProperties:new()
-        props.damage = player:get_attack_level()*10
+        props.damage = player:get_attack_level()*5
         sparkley_arrow_action = sparkley_arrow.card_create_action(player,props)
         player.remaining_special_cooldown = player.special_attack_cooldown_frames
+        player.movement_sparkles = 0
     end
     return sparkley_arrow_action
 end
@@ -99,7 +104,7 @@ function create_charged_attack(player)
     print("charged attack")
     local props = Battle.CardProperties:new()
     props.damage = 25+(player:get_attack_level()*5)
-    falling_star.number_of_stars = math.min(3,math.max(1,math.floor((player:get_rapid_level()/2)+1)))
+    falling_star.number_of_stars = math.min(3,math.max(1,math.floor((player:get_charge_level()/2)+1)))
     local falling_star_action = falling_star.card_create_action(player,props)
     return falling_star_action
 end

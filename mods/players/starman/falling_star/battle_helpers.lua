@@ -93,7 +93,8 @@ function battle_helpers.drop_trace_fx(target_artifact,lifetime_ms)
     fx.lifetime_ms = lifetime_ms
     fx.update_func = function(self, dt)
         self.lifetime_ms = math.max(0, self.lifetime_ms-math.floor(dt*1000))
-        self:set_color(Color.new(0, 0, 0, math.floor(fx.lifetime_ms/fx.starting_lifetime_ms)*255))
+        local alpha = math.floor((fx.lifetime_ms/fx.starting_lifetime_ms)*255)
+        self:set_color(Color.new(0, 0, 0,alpha))
 
         if self.lifetime_ms == 0 then 
             self:erase()
@@ -102,6 +103,7 @@ function battle_helpers.drop_trace_fx(target_artifact,lifetime_ms)
 
 	local tile = target_artifact:get_current_tile()
     field:spawn(fx, tile:x(), tile:y())
+    return fx
 end
 
 return battle_helpers
