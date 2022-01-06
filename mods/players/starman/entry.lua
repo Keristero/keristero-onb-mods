@@ -46,7 +46,6 @@ function player_init(player)
     texture = Engine.load_texture(battle_texture_path)
     player:set_texture(texture, true)
     player:set_fully_charged_color(Color.new(200,150,0,200))
-    player:set_charge_level(5)
     player:set_charge_position(0,player_info.charge_buster_glow_y_offset)
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
