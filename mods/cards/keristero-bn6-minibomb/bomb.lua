@@ -46,6 +46,7 @@ bomb.card_create_action = function(user,props)
         attachment_animation:load(attachment_animation_path)
         attachment_animation:set_state("DEFAULT")
 
+        user:toggle_counter(true)
         self:add_anim_action(3,function()
             attachment_sprite:hide()
             --self.remove_attachment(attachment)
@@ -64,6 +65,12 @@ bomb.card_create_action = function(user,props)
             end
             toss_spell(user,toss_height,attachment_texture,attachment_animation_path,target_tile,frames_in_air,action.on_landing)
 		end)
+        self:add_anim_action(4,function()
+            user:toggle_counter(false)
+		end)
+        self.action_end_func = function ()
+            user:toggle_counter(false)
+        end
 
         Engine.play_audio(throw_sfx, AudioPriority.Highest)
     end
@@ -79,7 +86,7 @@ function toss_spell(tosser,toss_height,texture,animation_path,target_tile,frames
     spell_animation:load(animation_path)
     spell_animation:set_state("DEFAULT")
     if tosser:get_height() > 1 then
-        starting_height = -(tosser:get_height()+40)
+        starting_height = -(tosser:get_height()*2)
     end
 
     spell.jump_started = false
