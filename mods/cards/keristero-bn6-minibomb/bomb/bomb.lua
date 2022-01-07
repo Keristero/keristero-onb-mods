@@ -1,10 +1,11 @@
-local debug = true
-local attachment_texture = Engine.load_texture(_modpath .. "attachment.png")
-local attachment_animation_path = _modpath .. "attachment.animation"
-local explosion_texture = Engine.load_texture(_modpath .. "explosion.png")
-local explosion_sfx = Engine.load_audio(_modpath .. "explosion.ogg")
-local explosion_animation_path = _modpath .. "explosion.animation"
-local throw_sfx = Engine.load_audio(_modpath .. "toss_item.ogg")
+local debug = false
+
+local attachment_texture = Engine.load_texture(_folderpath .. "attachment.png")
+local attachment_animation_path = _folderpath .. "attachment.animation"
+local explosion_texture = Engine.load_texture(_folderpath .. "explosion.png")
+local explosion_sfx = Engine.load_audio(_folderpath .. "explosion.ogg")
+local explosion_animation_path = _folderpath .. "explosion.animation"
+local throw_sfx = Engine.load_audio(_folderpath .. "toss_item.ogg")
 
 function debug_print(text)
     if debug then

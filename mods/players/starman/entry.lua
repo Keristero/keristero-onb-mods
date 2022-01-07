@@ -58,13 +58,13 @@ function player_init(player)
     player.update_func = function(self, dt)
         local current_tile = player:get_current_tile()
         if player.remaining_special_cooldown > 0 then
-            if sparkle_component then 
-                sparkle_component:eject() 
+            player.remaining_special_cooldown = player.remaining_special_cooldown - 1
+            if sparkle_component ~= nil then 
+                sparkle_component:eject()
                 sparkle_component = nil
             end
-            player.remaining_special_cooldown = player.remaining_special_cooldown - 1
         else
-            if not sparkle_component then
+            if sparkle_component == nil then
                 sparkle_component = add_sparkle_component(player)
             end
             -- nothing in particular

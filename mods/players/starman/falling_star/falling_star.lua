@@ -57,9 +57,6 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
     spell.frames_before_spawning_next_star = 15
     spell.next_star_spawned = false
     spell.warning_frames = 20
-    if facing == Direction.Left then
-        spell.starting_x_offset = spell.starting_x_offset * -1
-    end
     spell.x_offset = -300
     if facing == Direction.Left then
         spell.x_offset = spell.x_offset * -1

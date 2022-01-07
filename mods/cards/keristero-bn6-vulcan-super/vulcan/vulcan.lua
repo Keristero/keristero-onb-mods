@@ -1,20 +1,12 @@
 local battle_helpers = include("battle_helpers.lua")
-local sub_folder_path = _modpath.."/vulcan/" --folder we are inside
 
-local attachment_texture = Engine.load_texture(sub_folder_path .. "attachment.png")
-local attachment_animation_path = sub_folder_path .. "attachment.animation"
-local vulcan_impact_texture = Engine.load_texture(sub_folder_path .. "vulcan_impact.png")
-local vulcan_impact_animation_path = sub_folder_path .. "vulcan_impact.animation"
-local bullet_hit_texture = Engine.load_texture(sub_folder_path .. "bullet_hit.png")
-local bullet_hit_animation_path = sub_folder_path .. "bullet_hit.animation"
-local gun_sfx = Engine.load_audio(sub_folder_path .. "gun.ogg")
-
-local debug = true
-function debug_print(text)
-    if debug then
-        print("[vulcan] " .. text)
-    end
-end
+local attachment_texture = Engine.load_texture(_folderpath .. "attachment.png")
+local attachment_animation_path = _folderpath .. "attachment.animation"
+local vulcan_impact_texture = Engine.load_texture(_folderpath .. "vulcan_impact.png")
+local vulcan_impact_animation_path = _folderpath .. "vulcan_impact.animation"
+local bullet_hit_texture = Engine.load_texture(_folderpath .. "bullet_hit.png")
+local bullet_hit_animation_path = _folderpath .. "bullet_hit.animation"
+local gun_sfx = Engine.load_audio(_folderpath .. "gun.ogg")
 
 local vulcan = {
     name="Vulcan1",
@@ -36,7 +28,6 @@ vulcan.card_create_action = function(user,props)
     local vulcan_direction = user:get_facing()
     local f_padding = {1,0.032}
     action.frames = {f_padding,f_padding,f_padding,f_padding,f_padding,f_padding,f_padding}
-    local frame_prepared = false
     local hit_props = HitProps.new(
         props.damage, 
         Hit.Impact | Hit.Flinch, 
@@ -54,17 +45,12 @@ vulcan.card_create_action = function(user,props)
         end
         local FRAME_DATA = make_frame_data(action.frames)
         action:override_animation_frames(FRAME_DATA)
-        frame_prepared = true
     end
 
     --prepare override frame data
     action.before_exec(action)
 
     action.execute_func = function(self, user)
-        if not frame_prepared then
-            debug_print('FAIL Before excuting vulcans action call .before_exec')
-            return
-        end
         --local props = self:copy_metadata()
         local attachment = self:add_attachment("BUSTER")
         local attachment_sprite = attachment:sprite()
@@ -75,6 +61,7 @@ vulcan.card_create_action = function(user,props)
         attachment_animation:load(attachment_animation_path)
         attachment_animation:set_state("SPAWN")
         
+        user:toggle_counter(true)
 
         self:add_anim_action(2,function()
             attachment_animation:set_state("ATTACK")
@@ -96,11 +83,18 @@ vulcan.card_create_action = function(user,props)
             end)
         end
 
+        self:add_anim_action(5,function ()
+            user:toggle_counter(false)
+        end)
+
         self:add_anim_action(#action.frames-5,function()
             --show lag animation for last 5 overriden frames
             attachment_animation:set_state("END")
         end)
 
+    end
+    action.action_end_func = function ()
+        user:toggle_counter(false)
     end
     return action
 end
