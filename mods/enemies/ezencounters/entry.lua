@@ -7,7 +7,8 @@ local mob_package_id = "com."..package_prefix..".mob."..package_name
 local encounter_info = {
     enemy_packages = {
         Champy="com.keristero.char.Champy",
-        BigBrute="com.keristero.char.BigBrute"
+        BigBrute="com.keristero.char.BigBrute",
+        Mettaur="com.keristero.char.Mettaur",
     },
     tile_states = {
         TileState.Normal,
