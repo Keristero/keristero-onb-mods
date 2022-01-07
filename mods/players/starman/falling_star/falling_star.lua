@@ -97,7 +97,7 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
             end
             spell.x_offset = spell.x_offset - spell.x_movement
             spell.y_offset = spell.y_offset - spell.y_movement
-            spell:set_offset(spell.x_offset,spell.y_offset)
+            spell:set_offset(spell.x_offset+spell.x_movement,spell.y_offset+spell.y_movement)
             self.frames_before_impact = self.frames_before_impact -1
         else
             tile:attack_entities(self)
