@@ -24,10 +24,12 @@ the sources folder has assets used to create the mods and is only there for conv
     - Ultimate Warrior
 - Players
     - Protoman
+    - Starman
 
 # Incomplete mods
 - Cards
     - exodia cards
+    - tank cannon (adapting colonel's special chip)
 - Enemies
     - BN2 Popper
     - BN6 Gunner
