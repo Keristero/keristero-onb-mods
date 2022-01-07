@@ -12,10 +12,24 @@ local falling_star = {
 }
 
 function falling_star.card_create_action(user,props)
-    local action = Battle.CardAction.new(user, "PLAYER_SHOOTING")
+    local action = Battle.CardAction.new(user, "PLAYER_SWORD")
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
-		self:add_anim_action(1,function()
+
+        self:add_anim_action(2,function()
+            local hilt = self:add_attachment("HILT")
+            local hilt_sprite = hilt:sprite()
+            hilt_sprite:set_texture(user:get_texture())
+            hilt_sprite:set_layer(-2)
+            hilt_sprite:enable_parent_shader(true)
+
+            local hilt_anim = hilt:get_animation()
+            hilt_anim:copy_from(user:get_animation())
+            hilt_sprite:set_layer(-1)
+            hilt_anim:set_state("HAND")
+        end
+    )
+		self:add_anim_action(3,function()
             local field = user:get_field()
             local target_tile = user:get_tile(user:get_facing(),3)
             spell_falling_star(user,props,target_tile,falling_star.number_of_stars)
@@ -25,7 +39,7 @@ function falling_star.card_create_action(user,props)
 end
 
 function spell_falling_star(character,props,target_tile,stars_remaining)
-    print('created star')
+    print('created star',stars_remaining)
     Engine.play_audio(starfall_sfx, AudioPriority.Highest)
     local field = character:get_field()
     local facing = character:get_facing()
@@ -42,7 +56,7 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
     spell.frames_before_impact = 32
     spell.frames_before_spawning_next_star = 15
     spell.next_star_spawned = false
-    spell.warning_frames = 10
+    spell.warning_frames = 20
     if facing == Direction.Left then
         spell.starting_x_offset = spell.starting_x_offset * -1
     end
@@ -64,17 +78,17 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
     )
     spell.update_func = function (self)
         local tile = spell:get_current_tile()
-        if self.frames_before_spawning_next_star > 0 then
+        if self.frames_before_spawning_next_star > 1 then
             self.frames_before_spawning_next_star = self.frames_before_spawning_next_star - 1
         else
-            if not spell.next_star_spawned then
+            if not spell.next_star_spawned and stars_remaining > 1 then
                 --spawn next star with no target (will be randomized)
                 spell_falling_star(character,props,nil,stars_remaining-1)
                 spell.next_star_spawned = true
             end
         end
         if self.warning_frames > 0 then
-            tile:highlight(Highlight.Solid)
+            tile:highlight(Highlight.Flash)
             self.warning_frames = self.warning_frames - 1
         end
         if self.frames_before_impact > 0 then
@@ -103,7 +117,7 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
     end
     --if we have a target tile, spawn the star
     if target_tile then
-        field:spawn(falling_star, target_tile:x(), target_tile:y())
+        field:spawn(spell, target_tile:x(), target_tile:y())
     end
     return spell
 end
