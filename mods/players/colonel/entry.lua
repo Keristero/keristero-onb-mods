@@ -11,7 +11,7 @@ player_info = {
     speed=2,
     hp=1000,
     element=Element.Sword,
-    height=55
+    height=70
 }
 
 function package_init(package) 
