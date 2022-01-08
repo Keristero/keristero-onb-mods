@@ -1,9 +1,10 @@
 local texture = nil
 local battle_animation_path = nil
-local battle_helpers = include("battle_helpers.lua")
 local falling_star = include("/falling_star/falling_star.lua")
 local sparkley_arrow = include("/sparkley_arrow/sparkley_arrow.lua")
 local add_sparkle_component = include("/sparkle_component/sparkle_component.lua")
+local special_attack_cooldown_frames = 360
+local remaining_special_cooldown = 0
 local sparkle_component = nil
 
 local player_info = {
@@ -50,15 +51,15 @@ function player_init(player)
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
     player.special_attack_func = create_special_attack
-    player.special_attack_cooldown_frames = 360
-    player.remaining_special_cooldown = 0
-    player.movement_sparkles = 3
+    special_attack_cooldown_frames = 360
+    remaining_special_cooldown = 0
+    sparkle_component = nil
     player:set_air_shoe(true)
 
     player.update_func = function(self, dt)
         local current_tile = player:get_current_tile()
-        if player.remaining_special_cooldown > 0 then
-            player.remaining_special_cooldown = player.remaining_special_cooldown - 1
+        if remaining_special_cooldown > 0 then
+            remaining_special_cooldown = remaining_special_cooldown - 1
             if sparkle_component ~= nil then 
                 sparkle_component:eject()
                 sparkle_component = nil
@@ -80,13 +81,11 @@ end
 function create_special_attack(player)
     print("execute special")
     local sparkley_arrow_action = nil
-    if player.remaining_special_cooldown == 0 then
+    if remaining_special_cooldown == 0 then
         local props = Battle.CardProperties:new()
         props.damage = player:get_attack_level() * 5
         sparkley_arrow_action = sparkley_arrow.card_create_action(player, props)
-        player.remaining_special_cooldown =
-            player.special_attack_cooldown_frames
-        player.movement_sparkles = 0
+        remaining_special_cooldown = special_attack_cooldown_frames
     end
     return sparkley_arrow_action
 end
@@ -95,9 +94,7 @@ function create_charged_attack(player)
     print("charged attack")
     local props = Battle.CardProperties:new()
     props.damage = 25 + (player:get_attack_level() * 5)
-    falling_star.number_of_stars = math.min(3, math.max(1, math.floor(
-                                                            (player:get_charge_level() /
-                                                                2) + 1)))
+    falling_star.number_of_stars = math.min(3, math.max(1, math.floor((player:get_charge_level() /2) + 1)))
     local falling_star_action = falling_star.card_create_action(player, props)
     return falling_star_action
 end

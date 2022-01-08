@@ -16,8 +16,6 @@ function arrow.card_create_action(user,props)
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
 		self:add_anim_action(2,function()
-            local field = user:get_field()
-            local target_tile = user:get_tile(user:get_facing(),3)
             spell_sparkley_arrow(user,props)
 		end)
     end
