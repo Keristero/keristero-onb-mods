@@ -1,0 +1,11 @@
+animation state="IDLE"
+frame duration="0.5" x="0" y="66" w="51" h="25" originx="23" originy="12"
+frame duration="0.5" x="0" y="91" w="47" h="23" originx="20" originy="10"
+
+animation state="THUNDER"
+frame duration="0.2" x="40" y="0" w="50" h="30" originx="22" originy="14"
+frame duration="0.2" x="0" y="36" w="48" h="30" originx="21" originy="13"
+
+animation state="POOF"
+frame duration="0.032" x="48" y="36" w="32" h="29" originx="16" originy="14"
+frame duration="0.032" x="0" y="0" w="40" h="36" originx="20" originy="18"
