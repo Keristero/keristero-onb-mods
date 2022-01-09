@@ -20,7 +20,6 @@ local function spawn_cloud(character)
     field:spawn(visual_artifact, tile:x(), tile:y())
     visual_artifact.thunder_frames = 0
     visual_artifact.update_func = function ()
-        print('updating cloud!')
         if anim:get_state() == "THUNDER" then
             if visual_artifact.thunder_frames > 0 then
                 visual_artifact.thunder_frames = visual_artifact.thunder_frames - 1
@@ -81,7 +80,6 @@ local function add_component(character)
         player:set_air_shoe(true)
         player:set_float_shoe(true)
         player:register_status_callback(Hit.Stun,function ()
-            print('CLOUD DETECTED STUN')
             local anim = c.cloud_artifact:get_animation()
             anim:set_state("THUNDER")
             anim:set_playback(Playback.Loop)
