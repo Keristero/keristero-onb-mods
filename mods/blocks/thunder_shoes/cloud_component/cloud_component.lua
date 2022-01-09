@@ -40,6 +40,8 @@ local function add_component(character)
     local c = Battle.Component.new(character, Lifetimes.Battlestep)
     c.float_tic = 0
     c.base_elevation = 25
+    c.thunder_cooldown = 1200
+    c.thunder_cooldown_remaining = 0
 
     c.update_func = function(self, dt)
         local player = self:get_owner()
@@ -48,6 +50,10 @@ local function add_component(character)
             c:cleanup_func()
             self:eject()
             return
+        end
+
+        if c.thunder_cooldown_remaining > 0 then
+            c.thunder_cooldown_remaining = c.thunder_cooldown_remaining - 1
         end
 
         c.float_tic = c.float_tic + 0.1
@@ -80,11 +86,14 @@ local function add_component(character)
         player:set_air_shoe(true)
         player:set_float_shoe(true)
         player:register_status_callback(Hit.Stun,function ()
-            local anim = c.cloud_artifact:get_animation()
-            anim:set_state("THUNDER")
-            anim:set_playback(Playback.Loop)
-            c.cloud_artifact.thunder_frames = 30
-            thunder.create_spell(player)
+            if c.thunder_cooldown_remaining == 0 then
+                local anim = c.cloud_artifact:get_animation()
+                anim:set_state("THUNDER")
+                anim:set_playback(Playback.Loop)
+                c.cloud_artifact.thunder_frames = 30
+                thunder.create_spell(player)
+                c.thunder_cooldown_remaining = c.thunder_cooldown
+            end
         end)
         c.cloud_artifact = spawn_cloud(player)
         c.cloud_artifact:set_elevation(c.base_elevation)
