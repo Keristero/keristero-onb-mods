@@ -1,9 +1,6 @@
 local character_info = {name = "BigBrute", hp = 120,height=60}
-local debug = true
 function debug_print(text)
-    if debug then
-        print("[bigbrute] " .. text)
-    end
+    --print("[bigbrute] " .. text)
 end
 
 function package_init(self)
@@ -41,7 +38,6 @@ function package_init(self)
 
     --defense rules
     self.defense = Battle.DefenseVirusBody.new()
-    print("defense was created")
     self:add_defense_rule(self.defense)
 
     -- Initial state
