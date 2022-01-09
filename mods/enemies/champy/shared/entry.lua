@@ -178,13 +178,10 @@ end
 
 
 local function vanishing_teleport_action(user,target_tile)
-    print("vanishing teleport")
-
     local action = Battle.CardAction.new(user, "IDLE")
     action:set_lockout(make_sequence_lockout())
 
     action.execute_func = function(self)
-        print('user'.. user:get_id().." attacking")
         local step1 = Battle.Step.new()
         local step2 = Battle.Step.new()
         local step3 = Battle.Step.new()

@@ -28,7 +28,9 @@
         "include",
         "CardClass",
         "frames",
-        "Input"
+        "Input",
+        "_folderpath",
+        "Shadow"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"
