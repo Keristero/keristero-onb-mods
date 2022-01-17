@@ -1,4 +1,4 @@
-local add_component = include('/cloud_component/cloud_component.lua')
+local add_component = include('cloud_component/cloud_component.lua')
 
 function package_init(block)
     block:declare_package_id("com.keristero.block.ThndrShoe")

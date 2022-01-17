@@ -1,4 +1,4 @@
-local add_sparkle_component = include('/sparkle_component/sparkle_component.lua')
+local add_sparkle_component = include('sparkle_component/sparkle_component.lua')
 
 function package_init(block)
     block:declare_package_id("com.keristero.block.Sparkle")

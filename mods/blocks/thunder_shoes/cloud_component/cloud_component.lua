@@ -1,6 +1,6 @@
 local cloud_texture = Engine.load_texture(_folderpath .. "cloud.png")
 local cloud_animation_path = _folderpath.. "cloud.animation"
-local thunder = include('/thunder/thunder.lua')
+local thunder = include('thunder/thunder.lua')
 
 local function spawn_cloud(character)
     local visual_artifact = Battle.Artifact.new()
