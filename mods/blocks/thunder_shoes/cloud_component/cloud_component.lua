@@ -16,6 +16,8 @@ local function spawn_cloud(character)
     anim:set_playback(Playback.Loop)
     sprite:set_layer(1)
     visual_artifact:set_facing(facing)
+    visual_artifact:set_air_shoe(true)
+    visual_artifact:set_float_shoe(true)
     anim:refresh(sprite)
     field:spawn(visual_artifact, tile:x(), tile:y())
     visual_artifact.thunder_frames = 0
