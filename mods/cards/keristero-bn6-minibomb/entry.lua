@@ -1,4 +1,4 @@
-local bomb = include('bomb.lua')
+local bomb = include('bomb/bomb.lua')
 
 bomb.name="MiniBomb"
 bomb.damage=50

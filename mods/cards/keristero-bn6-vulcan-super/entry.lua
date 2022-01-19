@@ -1,4 +1,4 @@
-local vulcan = include("/vulcan/vulcan.lua")
+local vulcan = include("vulcan/vulcan.lua")
 
 vulcan.name = "SprVulcan"
 vulcan.codes = {"V"}

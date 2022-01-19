@@ -57,9 +57,6 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
     spell.frames_before_spawning_next_star = 15
     spell.next_star_spawned = false
     spell.warning_frames = 20
-    if facing == Direction.Left then
-        spell.starting_x_offset = spell.starting_x_offset * -1
-    end
     spell.x_offset = -300
     if facing == Direction.Left then
         spell.x_offset = spell.x_offset * -1
@@ -97,7 +94,7 @@ function spell_falling_star(character,props,target_tile,stars_remaining)
             end
             spell.x_offset = spell.x_offset - spell.x_movement
             spell.y_offset = spell.y_offset - spell.y_movement
-            spell:set_offset(spell.x_offset,spell.y_offset)
+            spell:set_offset(spell.x_offset+spell.x_movement,spell.y_offset+spell.y_movement)
             self.frames_before_impact = self.frames_before_impact -1
         else
             tile:attack_entities(self)

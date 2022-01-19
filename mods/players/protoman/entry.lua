@@ -1,7 +1,7 @@
 local texture = nil
 local battle_animation_path = nil
-local sword = include("/sword/sword.lua")
-local guard = include("/guard/guard.lua")
+local sword = include("sword/sword.lua")
+local guard = include("guard/guard.lua")
 
 player_info = {
     name="Protoman",

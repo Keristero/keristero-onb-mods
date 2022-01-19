@@ -3,7 +3,7 @@ local sub_folder_path = _modpath.."/sparkley_arrow/" --folder we are inside
 
 local starman_effects_texture = Engine.load_texture(sub_folder_path .. "effects.png")
 local starman_effects_texture_animation_path = sub_folder_path.. "effects.animation"
---local starfall_sfx = Engine.load_audio(sub_folder_path.."starfall.ogg")
+local starfall_sfx = Engine.load_audio(sub_folder_path.."arrow_shot.ogg")
 
 --variables that change for each version of the card
 local arrow = {
@@ -16,8 +16,6 @@ function arrow.card_create_action(user,props)
 	action:set_lockout(make_animation_lockout())
     action.execute_func = function(self, user)
 		self:add_anim_action(2,function()
-            local field = user:get_field()
-            local target_tile = user:get_tile(user:get_facing(),3)
             spell_sparkley_arrow(user,props)
 		end)
     end
@@ -26,7 +24,7 @@ end
 
 function spell_sparkley_arrow(character,props)
     print('created arrow')
-    --Engine.play_audio(starfall_sfx, AudioPriority.Highest)
+    Engine.play_audio(starfall_sfx, AudioPriority.Highest)
     local field = character:get_field()
     local facing = character:get_facing()
     local team = character:get_team()

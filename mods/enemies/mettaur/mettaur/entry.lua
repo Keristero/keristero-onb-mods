@@ -10,11 +10,9 @@ local teleport_animation_path = _modpath .. "teleport.animation"
 local teleport_texture_path = _modpath .. "teleport.png"
 local teleport_texture = Engine.load_texture(teleport_texture_path)
 
-local debug = true
 local function debug_print(text)
-    if debug then
-        print("[mettaur] " .. text)
-    end
+    --print("[mettaur] " .. text)
+
 end
 
 function get_tracker_from_direction(facing)
@@ -72,7 +70,6 @@ function package_init(self)
 
     --defense rules
     self.defense = Battle.DefenseVirusBody.new()
-    print("defense was created")
     self:add_defense_rule(self.defense)
 
     -- Initial state

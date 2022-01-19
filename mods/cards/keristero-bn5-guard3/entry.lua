@@ -1,4 +1,4 @@
-local guard = include("/guard/guard.lua")
+local guard = include("guard/guard.lua")
 
 --variables that change for each version of the card
 guard.name = "Guard3"

@@ -25,6 +25,9 @@ the sources folder has assets used to create the mods and is only there for conv
 - Players
     - Protoman
     - Starman
+- NCPS
+    - Sparkle
+    - Thunder Shoes
 
 # Incomplete mods
 - Cards

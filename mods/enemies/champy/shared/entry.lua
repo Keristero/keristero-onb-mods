@@ -1,4 +1,4 @@
-local shared_folder_path = _modpath.."../shared/"
+local battle_helpers = include("battle_helpers.lua")
 
 local enemy_info = {
     name = "Champy"
@@ -8,79 +8,17 @@ local function debug_print(text)
     --print("[champy] "..text)
 end
 
-local punch_sfx = Engine.load_audio(shared_folder_path.."punch.ogg")
-local punch2_sfx = Engine.load_audio(shared_folder_path.."punch2.ogg")
+local punch_sfx = Engine.load_audio(_folderpath.."punch.ogg")
+local punch2_sfx = Engine.load_audio(_folderpath.."punch2.ogg")
+local teleport_effect_texture = Engine.load_texture(_folderpath.."teleport_effect.png")
+local teleport_effect_animation_path = _folderpath.."teleport.animation"
+local impacts_texture = Engine.load_texture(_folderpath.."impacts.png")
+local impacts_animation_path = _folderpath.."impacts.animation"
 
-
-local function find_targets_ahead(user)
-    local field = user:get_field()
-    local user_tile = user:get_current_tile()
-    local user_team = user:get_team()
-    local list = field:find_characters(function(character)
-        return character:get_current_tile():y() == user_tile:y() and character:get_team() ~= user_team
-    end)
-    return list
-end
-
-local function target_first_enemy_tile(user,direction,can_hit_back_column)
-    local field = user:get_field()
-    local user_tile = user:get_current_tile()
-    local targets = find_targets_ahead(user)
-    if #targets == 0 then
-        if can_hit_back_column then
-            return field:tile_at(field:width(),user_tile:y())
-        end
-    elseif #targets == 1 then
-        return targets[1]:get_current_tile()
-    else
-        local closest_x_dist = 10
-        for index, character in ipairs(targets) do
-            local x_dist = math.abs(character:get_current_tile():x()-user_tile:x())
-            if x_dist < closest_x_dist then
-                closest_x_dist = x_dist
-            end
-        end
-        return user:get_tile(direction,closest_x_dist)
-    end
-    return nil
-end
-
-local function generic_artifact(texture_path, animation_path, state, field, tile)
-    local fx = Battle.Artifact.new()
-    fx:set_texture(Engine.load_texture(shared_folder_path..texture_path), true)
-    fx:sprite():set_layer(-2)
-    local anim = fx:get_animation()
-    anim:load(shared_folder_path..animation_path)
-    anim:set_state(state)
-    anim:set_playback(Playback.Once)
-    anim:on_complete(function ()
-        fx:erase()
-    end)
-    anim:refresh(fx:sprite())
-
-    field:spawn(fx, tile)
-
-    return fx
-end
-
-local function teleport_effect_artifact(field, tile)
-    return generic_artifact(
-        "teleport_effect.png", 
-        "teleport.animation", 
-        "teleport_effect", 
-        field, 
-        tile
-    )
-end
-
-local function punch_artifact(field, tile)
-    return generic_artifact(
-        "impacts.png", 
-        "impacts.animation", 
-        "volcano", 
-        field, 
-        tile
-    )
+function teleport_artifact(character,tile)
+    local teleport_effect_artifact = battle_helpers.spawn_visual_artifact(character,tile,teleport_effect_texture,teleport_effect_animation_path,"TELEPORT_EFFECT",0,0)
+    teleport_effect_artifact:sprite():set_layer(-2)
+    return teleport_effect_artifact
 end
 
 local function fire_burst(user,target_tile,damage,is_2nd_punch)
@@ -113,8 +51,7 @@ local function fire_burst(user,target_tile,damage,is_2nd_punch)
 
     spell.attack_func = function(self, other) 
         local current_tile = self:get_current_tile()
-        local particle = punch_artifact(self:get_field(), current_tile)
-        particle:set_offset(0, -(other:get_height()/2)-10)
+        battle_helpers.spawn_visual_artifact(user,current_tile,impacts_texture,impacts_animation_path,"VOLCANO",0,-(other:get_height()/2)-10)
     end
 
     user:get_field():spawn(spell, target_tile:x(), target_tile:y())
@@ -127,7 +64,7 @@ local function fire_burst(user,target_tile,damage,is_2nd_punch)
 end
 
 local function start_hide(character, target_tile, seconds, callback)
-    teleport_effect_artifact(character:get_field(), character:get_current_tile())
+    teleport_artifact(character,character:get_current_tile())
     local c = Battle.Component.new(character, Lifetimes.Battlestep)
     c.duration = seconds
     c.target_reserved = false
@@ -144,10 +81,11 @@ local function start_hide(character, target_tile, seconds, callback)
         if not c.target_reserved and self.duration <= seconds-0.240 then
             --a short delay after hiding (15 frames) try retargetting
             local facing = character:get_facing()
-            local enemy_tile = target_first_enemy_tile(character,facing,false)
-            if enemy_tile ~= nil then
+            local target = battle_helpers.get_first_target_ahead(character)
+            if target ~= nil then
+                local target_tile = target:get_current_tile()
                 local reverse_dir = Direction.reverse(facing)
-                c.target_tile = enemy_tile:get_tile(reverse_dir,1)
+                c.target_tile = target_tile:get_tile(reverse_dir,1)
             end
             --now reserve the target tile
             c.target_tile:reserve_entity_by_id(character:get_id())
@@ -178,13 +116,10 @@ end
 
 
 local function vanishing_teleport_action(user,target_tile)
-    print("vanishing teleport")
-
     local action = Battle.CardAction.new(user, "IDLE")
     action:set_lockout(make_sequence_lockout())
 
     action.execute_func = function(self)
-        print('user'.. user:get_id().." attacking")
         local step1 = Battle.Step.new()
         local step2 = Battle.Step.new()
         local step3 = Battle.Step.new()
@@ -220,7 +155,7 @@ local function vanishing_teleport_action(user,target_tile)
             hide_component = start_hide(user,target_tile,0.448,
                 function (owner, tile)
                     tile:add_entity(owner)
-                    teleport_effect_artifact(owner:get_field(), tile)
+                    teleport_artifact(user,tile)
                     local obsts = tile:find_obstacles(function(o) return true end)
 
                     for i=1, #obsts do
@@ -326,10 +261,10 @@ local function vanishing_teleport_action(user,target_tile)
 
         step5.update_func = function(self, dt)
             debug_print("vanishing teleport STEP 5")
-            teleport_effect_artifact(user:get_field(), user:get_current_tile())
+            teleport_artifact(user,user:get_current_tile())
             local did_teleport = user:teleport(start_tile,ActionOrder.Involuntary)
             if did_teleport then
-                teleport_effect_artifact(user:get_field(), start_tile)
+                teleport_artifact(user,start_tile)
                 self:complete_step()
             end
         end
@@ -352,9 +287,9 @@ local function package_init(self)
     --Required function, main package information
 
     --Load character resources
-	self.texture = Engine.load_texture(shared_folder_path.."battle.greyscaled.png")
+	self.texture = Engine.load_texture(_folderpath.."battle.greyscaled.png")
 	self.animation = self:get_animation()
-	self.animation:load(shared_folder_path.."battle.animation")
+	self.animation:load(_folderpath.."battle.animation")
 
     --Set up character meta
     self:set_name(enemy_info.name)
@@ -383,12 +318,11 @@ local function package_init(self)
         local character_facing = character:get_facing()
         --debug_print("original update_func called: "..character.ai_state)
         if character.ai_state == "idle" then
-            local enemy_tile = target_first_enemy_tile(character,character_facing,false)
-            if enemy_tile == nil then
-                --debug_print('no target...')
+            local target = battle_helpers.get_first_target_ahead(character)
+            if target == nil then
                 return
             end
-
+            local enemy_tile = target:get_current_tile()
             debug_print('aha, a target...')
             local reverse_dir = Direction.reverse(character_facing)
             debug_print('reverse dir = '..reverse_dir)
