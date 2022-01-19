@@ -65,11 +65,7 @@ function package_requires_scripts()
     end
 end
 
-function define_package(name)
-    Engine.define_package(mob_package_id, _modpath..name)
-end
-
-function get_package(alias) 
+function get_package_id(alias) 
     return encounter_info.enemy_packages[alias]
 end
 
@@ -135,7 +131,7 @@ function package_build(mob,data)
     spawners = {}
     for index, enemy_info in ipairs(data.enemies) do
         local enemy_rank = get_enum_value_by_index(encounter_info.enemy_ranks,enemy_info.rank)
-        spawners[index] = mob:create_spawner(get_package(enemy_info.name),enemy_rank)
+        spawners[index] = mob:create_spawner(get_package_id(enemy_info.name),enemy_rank)
     end
 
     --spawn enemies at positions
