@@ -1,5 +1,5 @@
 --Functions for easy reuse in scripts
---Version 1.6
+--Version 1.7 (fixed find targets ahead getting non character/obstacles)
 
 battle_helpers = {}
 
@@ -44,6 +44,9 @@ function battle_helpers.find_targets_ahead(user)
     local user_team = user:get_team()
     local user_facing = user:get_facing()
     local list = field:find_entities(function(entity)
+        if Battle.Character.from(entity) == nil and Battle.Obstacle.from(entity) == nil then
+            return false
+        end
         local entity_tile = entity:get_current_tile()
         if entity_tile:y() == user_tile:y() and entity:get_team() ~= user_team then
             if user_facing == Direction.Left then
