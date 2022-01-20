@@ -1,7 +1,5 @@
-local sub_folder_path = _modpath.."/sparkle_component/" --folder we are inside
-
-local starman_effects_texture = Engine.load_texture(sub_folder_path .. "effects.png")
-local starman_effects_texture_animation_path = sub_folder_path.. "effects.animation"
+local starman_effects_texture = Engine.load_texture(_folderpath .. "/effects.png")
+local starman_effects_texture_animation_path = _folderpath.. "/effects.animation"
 local battle_helpers = include("battle_helpers.lua")
 
 local function add_component(character)

@@ -3,7 +3,7 @@ local battle_animation_path = nil
 local sword = include("sword/sword.lua")
 local guard = include("guard/guard.lua")
 
-player_info = {
+local player_info = {
     name="Protoman",
     author="keristero",
     description="Red version of Blues",
@@ -13,7 +13,8 @@ player_info = {
     hp=1000,
     element=Element.Sword,
     height=60,
-    charge_buster_glow_y_offset=-20
+    charge_buster_glow_y_offset=-20,
+    charge_buster_color=Color.new(255,50,0,200)
 }
 
 function package_init(package) 
@@ -41,7 +42,7 @@ function player_init(player)
     player:set_animation(battle_animation_path)
     texture = Engine.load_texture(battle_texture_path)
     player:set_texture(texture, true)
-    player:set_fully_charged_color(Color.new(255,50,0,200))
+    player:set_fully_charged_color(player_info.charge_buster_color)
     player:set_charge_position(0,player_info.charge_buster_glow_y_offset)
     player.normal_attack_func = create_normal_attack
     player.charged_attack_func = create_charged_attack
