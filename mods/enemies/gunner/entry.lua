@@ -29,7 +29,6 @@ function package_build(mob)
     --can setup backgrounds, music, and field here
     local test_spawner = mob:create_spawner(get_package(package_name),Rank.V1)
     test_spawner:spawn_at(4, 1)
-
-    local test_spawner_sp = mob:create_spawner(get_package(package_name),Rank.SP)
-    test_spawner_sp:spawn_at(6, 3)
+    test_spawner:spawn_at(5, 2)
+    test_spawner:spawn_at(6, 3)
 end

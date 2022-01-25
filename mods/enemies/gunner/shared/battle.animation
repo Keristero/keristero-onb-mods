@@ -2,10 +2,13 @@ animation state="IDLE"
 frame duration="0.016" x="0" y="0" w="50" h="55" originx="25" originy="49" flipx="1"
 
 animation state="SCANNING"
-frame duration="0.032" x="0" y="55" w="50" h="53" originx="25" originy="47" flipx="1"
+frame duration="0.032" x="50" y="0" w="50" h="55" originx="25" originy="49" flipx="1"
 frame duration="0.032" x="50" y="0" w="50" h="55" originx="25" originy="49" flipx="1"
 frame duration="0.32" x="50" y="55" w="50" h="53" originx="25" originy="47" flipx="1"
 frame duration="3" x="50" y="55" w="50" h="53" originx="25" originy="47" flipx="1"
+
+animation state="PRE_FIRING"
+frame duration="1" x="50" y="55" w="50" h="53" originx="25" originy="47" flipx="1"
 
 animation state="FIRING"
 frame duration="0.016" x="100" y="55" w="50" h="53" originx="25" originy="47" flipx="1"

@@ -8,9 +8,9 @@ local function debug_print(text)
     print("[Gunner] "..text)
 end
 
-local scanning_click_sfx = Engine.load_audio(_folderpath.."scanning_click.ogg")
+local scanning_click_sfx = Engine.load_audio(_folderpath.."scanning_click_norm.ogg")
 local gun_sfx = Engine.load_audio(_folderpath.."gun.ogg")
-local scanning_lock_sfx = Engine.load_audio(_folderpath.."scanning_lock.ogg")
+local scanning_lock_sfx = Engine.load_audio(_folderpath.."scanning_lock_norm.ogg")
 local reticle_texture = Engine.load_texture(_folderpath .. "reticle.png")
 local reticle_animation_path = _folderpath .. "reticle.animation"
 local ground_bullet_texture = Engine.load_texture(_folderpath .. "ground_bullet.png")
@@ -88,7 +88,7 @@ function spell_reticle(character,scan_finished_callback)
                     return enemy:get_team() ~= team
                 end)
                 if #targets > 0 then
-                    anim:set_state("RETICLE_LOCK")
+                    anim:set_state("RETICLE_LOCK")              
                     Engine.play_audio(scanning_lock_sfx, AudioPriority.Highest)
                     anim:on_complete(function()
                         scan_finished_callback(current_tile,true)
@@ -152,6 +152,7 @@ function action_scan(character)
             local scan_finished_callback = function (tile,target_was_found)
                 if target_was_found then
                     character.ai_state = "firing"
+                    character.animation:set_state("PRE_FIRING")
                     character.attack_action = action_fire(user,tile)
                     character.attack_action.action_end_func = function ()
                         character.ai_state = "cooldown"
@@ -216,6 +217,7 @@ local function package_init(self)
             character.current_scan_action:end_action()
         end
         self.ai_state = "idle"
+        self.animation:set_state("IDLE")
     end
     self:register_status_callback(Hit.Stun,scanning_interrupt)
     self:register_status_callback(Hit.Drag,scanning_interrupt)
@@ -227,6 +229,7 @@ local function package_init(self)
                 return
             end
             self.ai_state = "idle"
+            self.animation:set_state("IDLE")
         elseif self.ai_state == "idle" then
             local targets = battle_helpers.find_targets_ahead(character)
             if #targets > 0 then
@@ -252,7 +255,7 @@ local function package_init(self)
    end
     self.delete_func = function (self)
         debug_print("delete_func called")
-        scanning_interrupt(self)
+        scanning_interrupt()
     end
 end
 
