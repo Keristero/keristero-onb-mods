@@ -1,4 +1,3 @@
-local shared_folder_path = _modpath.."../shared/"
 local battle_helpers = include("battle_helpers.lua")
 
 local enemy_info = {
@@ -9,13 +8,13 @@ local function debug_print(text)
     print("[Gunner] "..text)
 end
 
-local scanning_click_sfx = Engine.load_audio(shared_folder_path.."scanning_click.ogg")
-local gun_sfx = Engine.load_audio(shared_folder_path.."gun.ogg")
-local scanning_lock_sfx = Engine.load_audio(shared_folder_path.."scanning_lock.ogg")
-local reticle_texture = Engine.load_texture(shared_folder_path .. "reticle.png")
-local reticle_animation_path = shared_folder_path .. "reticle.animation"
-local ground_bullet_texture = Engine.load_texture(shared_folder_path .. "ground_bullet.png")
-local ground_bullet_animation_path = shared_folder_path .. "ground_bullet.animation"
+local scanning_click_sfx = Engine.load_audio(_folderpath.."scanning_click.ogg")
+local gun_sfx = Engine.load_audio(_folderpath.."gun.ogg")
+local scanning_lock_sfx = Engine.load_audio(_folderpath.."scanning_lock.ogg")
+local reticle_texture = Engine.load_texture(_folderpath .. "reticle.png")
+local reticle_animation_path = _folderpath .. "reticle.animation"
+local ground_bullet_texture = Engine.load_texture(_folderpath .. "ground_bullet.png")
+local ground_bullet_animation_path = _folderpath .. "ground_bullet.animation"
 
 function spell_delayed_bullet(character,target_tile,damage)
     print('created bullet')
@@ -72,11 +71,13 @@ function spell_reticle(character,scan_finished_callback)
     anim:refresh(sprite)
     anim:set_playback(Playback.Loop)
     spell:set_offset(0,-20)
+    sprite:set_layer(-4)
     spell.update_func = function (self)
         local current_animation_state = anim:get_state()
         if current_animation_state == "RETICLE_MOVE" then
             local current_tile = spell:get_current_tile()
             if current_tile:is_edge() then
+                print('reticle went off edge')
                 scan_finished_callback(current_tile,false)
                 spell:delete()
                 return
@@ -127,8 +128,6 @@ function action_fire(character,target_tile)
     end
     action.update_func = function (self)
     end
-    action.action_end_func = function (self)
-    end
     return action
 end
 
@@ -152,8 +151,16 @@ function action_scan(character)
             end
             local scan_finished_callback = function (tile,target_was_found)
                 if target_was_found then
-                    local attack_action = action_fire(user,tile)
-                    character:card_action_event(attack_action, ActionOrder.Immediate)
+                    character.ai_state = "firing"
+                    character.attack_action = action_fire(user,tile)
+                    character.attack_action.action_end_func = function ()
+                        character.ai_state = "cooldown"
+                        character.cooldown = 30
+                    end
+                    character:card_action_event(character.attack_action, ActionOrder.Immediate)
+                else
+                    character.ai_state = "cooldown"
+                    character.cooldown = 30
                 end
                 self:end_action()
             end
@@ -179,9 +186,9 @@ local function package_init(self)
     --Required function, main package information
 
     --Load character resources
-	self.texture = Engine.load_texture(shared_folder_path.."battle.greyscaled.png")
+	self.texture = Engine.load_texture(_folderpath.."battle.greyscaled.png")
 	self.animation = self:get_animation()
-	self.animation:load(shared_folder_path.."battle.animation")
+	self.animation:load(_folderpath.."battle.animation")
 
     --Set up character meta
     self:set_name(enemy_info.name)
@@ -196,23 +203,35 @@ local function package_init(self)
     self.animation:set_state("IDLE")
     self.animation:set_playback(Playback.Loop)
     self.bullet_damage = 10
+    self.ai_state = "idle"
+    self.cooldown = 30
 
     local scanning_interrupt = function (character)
         if character.current_scan_action then
             character.current_scan_action:end_action()
         end
+        self.ai_state = "idle"
     end
-    self:register_status_callback(Hit.Stun | Hit.Drag,scanning_interrupt)
+    self:register_status_callback(Hit.Stun,scanning_interrupt)
+    self:register_status_callback(Hit.Drag,scanning_interrupt)
 
     self.update_func = function (character,dt)
-        if not character.current_scan_action then
+        if self.ai_state == "cooldown" then
+            if self.cooldown > 0 then
+                self.cooldown = self.cooldown - 1
+                return
+            end
+            self.ai_state = "idle"
+        elseif self.ai_state == "idle" then
             local targets = battle_helpers.find_targets_ahead(character)
             if #targets > 0 then
                 local action = action_scan(character)
                 action.action_end_func = function ()
+                    print('scanning ended')
                     character.current_scan_action = nil
                 end
                 character.current_scan_action = action
+                self.ai_state = "scanning"
                 character:card_action_event(action, ActionOrder.Voluntary)
             end
         end

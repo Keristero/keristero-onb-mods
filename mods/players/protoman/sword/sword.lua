@@ -2,10 +2,9 @@
 nonce = function() end
 
 local DAMAGE = 80 --default damage (should be overriden by caller with action.damage)
-local sub_folder_path = _modpath.."/sword/" --folder we are inside
-local SLASH_TEXTURE = Engine.load_texture(sub_folder_path.."spell_sword_slashes.png")
-local BLADE_TEXTURE = Engine.load_texture(sub_folder_path.."spell_sword_blades.png")
-local AUDIO = Engine.load_audio(sub_folder_path.."sfx.ogg")
+local SLASH_TEXTURE = Engine.load_texture(_folderpath.."spell_sword_slashes.png")
+local BLADE_TEXTURE = Engine.load_texture(_folderpath.."spell_sword_blades.png")
+local AUDIO = Engine.load_audio(_folderpath.."sfx.ogg")
 
 local sword = {
 
@@ -32,7 +31,7 @@ sword.card_create_action = function(user, props)
 				blade_sprite:set_layer(-1)
 
 				local blade_anim = blade:get_animation()
-				blade_anim:load(sub_folder_path.."spell_sword_blades.animation")
+				blade_anim:load(_folderpath.."spell_sword_blades.animation")
 				blade_anim:set_state("DEFAULT")
 			end
 		)
@@ -52,7 +51,7 @@ sword.card_create_action = function(user, props)
 				fx:set_facing(sword:get_facing())
 				local anim = fx:get_animation()
 				fx:set_texture(SLASH_TEXTURE, true)
-				anim:load(sub_folder_path.."spell_sword_slashes.animation")
+				anim:load(_folderpath.."spell_sword_slashes.animation")
 				anim:set_state("WIDE")
 				anim:on_complete(
 					function()

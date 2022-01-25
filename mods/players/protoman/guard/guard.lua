@@ -1,15 +1,13 @@
 local battle_helpers = include("battle_helpers.lua")
 
-local sub_folder_path = _modpath.."/guard/" --folder we are inside
-
-local wave_texture = Engine.load_texture(sub_folder_path .. "shockwave.png")
-local wave_sfx = Engine.load_audio(sub_folder_path .. "shockwave.ogg")
-local shield_texture = Engine.load_texture(sub_folder_path .. "guard_attachment.png")
-local sheild_animation_path = sub_folder_path .. "guard_attachment.animation"
-local guard_hit_effect_texture = Engine.load_texture(sub_folder_path .. "guard_hit.png")
-local guard_hit_effect_animation_path = sub_folder_path .. "guard_hit.animation"
-local tink_sfx = Engine.load_audio(sub_folder_path .. "tink.ogg")
-local shield_sfx = Engine.load_audio(sub_folder_path .. "shield.ogg")
+local wave_texture = Engine.load_texture(_folderpath .. "shockwave.png")
+local wave_sfx = Engine.load_audio(_folderpath .. "shockwave.ogg")
+local shield_texture = Engine.load_texture(_folderpath .. "guard_attachment.png")
+local sheild_animation_path = _folderpath .. "guard_attachment.animation"
+local guard_hit_effect_texture = Engine.load_texture(_folderpath .. "guard_hit.png")
+local guard_hit_effect_animation_path = _folderpath .. "guard_hit.animation"
+local tink_sfx = Engine.load_audio(_folderpath .. "tink.ogg")
+local shield_sfx = Engine.load_audio(_folderpath .. "shield.ogg")
 
 --variables that change for each version of the card
 local guard = {
@@ -106,7 +104,7 @@ function spawn_shockwave(owner, team, field, tile, direction,damage, wave_textur
         sprite:set_texture(wave_texture)
 
         local animation = spell:get_animation()
-        animation:load(sub_folder_path .. "shockwave.animation")
+        animation:load(_folderpath .. "shockwave.animation")
         animation:set_state("DEFAULT")
         animation:refresh(sprite)
         animation:on_frame(3, function()
