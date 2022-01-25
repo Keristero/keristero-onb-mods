@@ -205,9 +205,14 @@ local function package_init(self)
     self.bullet_damage = 10
     self.ai_state = "idle"
     self.cooldown = 30
+    local character = self
 
-    local scanning_interrupt = function (character)
+    local scanning_interrupt = function ()
+        print('interrupting scan')
         if character.current_scan_action then
+            if character.current_scan_action.reticle_spell then
+                character.current_scan_action.reticle_spell:delete()
+            end
             character.current_scan_action:end_action()
         end
         self.ai_state = "idle"
