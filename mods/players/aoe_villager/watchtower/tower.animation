@@ -1,0 +1,7 @@
+animation state="BUILDING"
+frame duration="999.999" x="0" y="114" w="54" h="36" originx="28" originy="22"
+frame duration="999.999" x="60" y="0" w="55" h="45" originx="29" originy="27"
+frame duration="999.999" x="60" y="45" w="57" h="41" originx="30" originy="27"
+
+animation state="BUILT"
+frame duration="0.1" x="0" y="0" w="60" h="114" originx="30" originy="99"
