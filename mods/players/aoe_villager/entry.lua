@@ -79,7 +79,6 @@ function player_init(player)
         if player:is_moving() then
             if not played_move_sound then
                 local sound_name = move_sounds[math.random(1,#move_sounds)]
-                print(sound_name)
                 Engine.play_audio(sounds[sound_name], AudioPriority.Highest)
                 played_move_sound = true
             end
@@ -93,17 +92,14 @@ function player_init(player)
 end
 
 function create_normal_attack(player)
-    print("buster attack")
     return nil
 end
 
 function create_special_attack(player)
-    print("execute special")
     return nil
 end
 
 function create_charged_attack(player)
-    print("charged attack")
     Engine.play_audio(sounds.attack1,AudioPriority.Highest)
     local props = Battle.CardProperties:new()
     props.damage = 1
