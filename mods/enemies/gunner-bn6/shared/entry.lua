@@ -17,7 +17,6 @@ local ground_bullet_texture = Engine.load_texture(_folderpath .. "ground_bullet.
 local ground_bullet_animation_path = _folderpath .. "ground_bullet.animation"
 
 function spell_delayed_bullet(character,target_tile,damage)
-    print('created bullet')
     local facing = character:get_facing()
     local team = character:get_team()
     local spell = Battle.Spell.new(team)
@@ -59,7 +58,6 @@ function spell_delayed_bullet(character,target_tile,damage)
 end
 
 function spell_reticle(character,scan_finished_callback)
-    print('created reticle')
     local facing = character:get_facing()
     local team = character:get_team()
     local spell = Battle.Spell.new(team)
@@ -77,7 +75,6 @@ function spell_reticle(character,scan_finished_callback)
         if current_animation_state == "RETICLE_MOVE" then
             local current_tile = spell:get_current_tile()
             if current_tile:is_edge() then
-                print('reticle went off edge')
                 scan_finished_callback(current_tile,false)
                 spell:delete()
                 return
@@ -132,7 +129,6 @@ function action_fire(character,target_tile)
 end
 
 function action_scan(character)
-    print('creating scan action')
     local field = character:get_field()
     local facing = character:get_facing()
     local current_tile = character:get_current_tile()
@@ -173,7 +169,6 @@ function action_scan(character)
         end)
 	end
     action.action_end_func = function ()
-        print('action done mate')
         if action.reticle_spell then
             action.reticle_spell:delete()
         end
@@ -183,7 +178,6 @@ end
 
 
 local function package_init(self)
-    debug_print("package_init called")
     --Required function, main package information
 
     --Load character resources
@@ -209,7 +203,6 @@ local function package_init(self)
     local character = self
 
     local scanning_interrupt = function ()
-        print('interrupting scan')
         if character.current_scan_action then
             if character.current_scan_action.reticle_spell then
                 character.current_scan_action.reticle_spell:delete()
@@ -235,7 +228,6 @@ local function package_init(self)
             if #targets > 0 then
                 local action = action_scan(character)
                 action.action_end_func = function ()
-                    print('scanning ended')
                     character.current_scan_action = nil
                 end
                 character.current_scan_action = action
@@ -245,16 +237,12 @@ local function package_init(self)
         end
     end
     self.battle_start_func = function (self)
-        debug_print("battle_start_func called")
     end
     self.battle_end_func = function (self)
-        debug_print("battle_end_func called")
     end
     self.on_spawn_func = function (self, spawn_tile) 
-        debug_print("on_spawn_func called")
    end
     self.delete_func = function (self)
-        debug_print("delete_func called")
         scanning_interrupt()
     end
 end
