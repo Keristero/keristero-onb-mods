@@ -10,7 +10,8 @@ function package_requires_scripts()
     Engine.define_character(character_package_id, _modpath..character_name)
 end
 
-function package_init(package) 
+function package_init(package)
+    print('package init for '..mob_package_id)
     package:declare_package_id(mob_package_id)
     package:set_name(character_name)
     package:set_description("test fight with a "..character_name)

@@ -9,33 +9,34 @@ local encounter_info = {
         Champy="com.keristero.char.Champy",
         BigBrute="com.keristero.char.BigBrute",
         Mettaur="com.keristero.char.Mettaur",
+        Gunner="com.keristero.char.Gunner",
     },
     tile_states = {
-        TileState.Normal,
-        TileState.Cracked,
-        TileState.Broken,
-        TileState.DirectionUp,
-        TileState.DirectionDown,
-        TileState.DirectionLeft,
-        TileState.DirectionRight,
-        TileState.Empty,
-        TileState.Grass,
-        TileState.Hidden,
-        TileState.Holy,
-        TileState.Ice,
-        TileState.Lava,
-        TileState.Poison,
-        TileState.Volcano
+        0,--normal
+        1,--cracked
+        2,--broken
+        11,--up
+        12,--down
+        9,--left
+        10,--right
+        7,--empty
+        4,--grass
+        14,--hidden
+        8,--holy
+        3,--ice
+        5,--lava
+        6,--poison
+        13--volcano
     },
     enemy_ranks = {
-        Rank.V1,
-        Rank.V2,
-        Rank.V3,
-        Rank.SP,
-        Rank.EX,
-        Rank.Rare1,
-        Rank.Rare2,
-        Rank.NM
+        0,--v1
+        1,--v2
+        2,--v3
+        3,--sp
+        4,--ex
+        5,--rare1
+        6,--rare2
+        7--nightmare
     },
     field_tiles_default = {
         {1,1,1,1,1,1},
@@ -63,6 +64,9 @@ function package_requires_scripts()
         print('[ezencounters] requiring '..package)
         Engine.requires_character(package)
     end
+    for index, value in ipairs(encounter_info.enemy_ranks) do
+        print('[ezencounters] ranks '..index..' = '..value)
+    end
 end
 
 function get_package_id(alias) 
@@ -85,17 +89,40 @@ function package_build(mob,data)
             weight=10,
             enemies = {
                 {name="BigBrute",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
-                {name="Champy",rank=1},
+                {name="Gunner",rank=1},
             },
             positions = {
-                {0,0,0,1,0,0},
-                {0,0,0,0,2,0},
-                {0,0,0,0,0,1}
+                {0,0,0,2,0,0},
+                {0,0,0,0,1,0},
+                {0,0,0,0,0,2}
             },
             tiles = {
-                {7,7,7,1,1,1},
-                {4,1,5,1,1,1},
-                {6,6,6,1,1,1}
+                {1,1,1,1,1,1},
+                {1,1,1,1,1,1},
+                {1,1,1,1,1,1}
+            },
+            obstacles = {
+                {name="RockCube"}
+            },
+            obstacle_positions = {
+                {0,0,0,0,1,0},
+                {0,0,0,1,0,0},
+                {0,0,0,0,0,0}
+            },
+            player_positions = {
+                {0,0,0,0,0,0},
+                {0,0,1,0,0,0},
+                {0,0,0,0,0,0}
+            },
+            freedom_mission={
+                turn_count=5,
+                player_can_flip=true
+            },
+            background={
+                
+            },
+            music={
+                path="bcc_battle.mid"
             }
         }
     end
@@ -131,6 +158,7 @@ function package_build(mob,data)
     spawners = {}
     for index, enemy_info in ipairs(data.enemies) do
         local enemy_rank = get_enum_value_by_index(encounter_info.enemy_ranks,enemy_info.rank)
+        print("trying to make spawner for ",enemy_info.name,enemy_rank)
         spawners[index] = mob:create_spawner(get_package_id(enemy_info.name),enemy_rank)
     end
 
@@ -146,7 +174,6 @@ function package_build(mob,data)
                 local enemy_info = data.enemies[spawner_id]
                 local mutator = spawner:spawn_at(x, y)
                 mutator:mutate(function (character)
-                    print('mutating')
                     if enemy_info.nickname ~= nil then
                         character:set_name(enemy_info.nickname)
                     end
@@ -159,6 +186,40 @@ function package_build(mob,data)
                 end)
             end
         end
+    end
+
+    if data.player_positions then
+        for y, x_table in ipairs(data.player_positions) do
+            for x, player_id in ipairs(x_table) do
+                if player_id ~= 0 then
+                    mob:spawn_player( player_id, x, y )
+                end
+            end
+        end
+    end
+
+    if data.freedom_mission then
+        local turns = 3
+        local can_flip = true
+        if data.freedom_mission.turns ~= nil then
+            turns = data.freedom_mission.turns
+        end
+        if data.freedom_mission.player_can_flip ~= nil then
+            can_flip = data.freedom_mission.player_can_flip
+        end
+        mob:enable_freedom_mission(turns,can_flip)
+    end
+
+    if data.music then
+        local loop_start = 0
+        local loop_end = 0
+        if data.music.loop_start then
+            loop_start = data.music.loop_start
+        end
+        if data.music.loop_end then
+            loop_end = data.music.loop_end
+        end
+        mob:stream_music(_folderpath.."/music/"..data.music.path,loop_start,loop_end)
     end
 
 end
