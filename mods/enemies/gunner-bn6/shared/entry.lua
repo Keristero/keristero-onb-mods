@@ -225,7 +225,13 @@ local function package_init(self)
             self.animation:set_state("IDLE")
         elseif self.ai_state == "idle" then
             local targets = battle_helpers.find_targets_ahead(character)
-            if #targets > 0 then
+            local filtered_targets = {}
+            for index, entity in ipairs(targets) do
+                if entity:get_team() ~= Team.Other then
+                    filtered_targets[#filtered_targets+1] = entity
+                end
+            end
+            if #filtered_targets > 0 then
                 local action = action_scan(character)
                 action.action_end_func = function ()
                     character.current_scan_action = nil

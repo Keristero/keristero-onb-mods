@@ -5,7 +5,7 @@ local package_name = "Gunner"
 local character_package_prefix = "com."..package_prefix..".char."
 local mob_package_id = "com."..package_prefix..".mob."..package_name
 
-function define_package(name)
+function define_libraryt(name)
     local id = character_package_prefix..name
     Engine.define_character(id, _modpath..name)
 end
@@ -15,7 +15,7 @@ function get_package(name)
 end
 
 function package_requires_scripts()
-    define_package("Gunner")
+    define_libraryt("Gunner")
 end
 
 function package_init(package) 
