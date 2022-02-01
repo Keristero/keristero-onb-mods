@@ -1,0 +1,5 @@
+animation state="IDLE"
+frame duration="0.1" x="0" y="0" w="34" h="44" originx="15" originy="36"
+
+animation state="DESTROY"
+frame duration="0.1" x="0" y="44" w="53" h="30" originx="21" originy="23"

@@ -30,7 +30,8 @@
         "frames",
         "Input",
         "_folderpath",
-        "Shadow"
+        "Shadow",
+        "Team"
     ],
     "Lua.diagnostics.disable": [
         "lowercase-global"

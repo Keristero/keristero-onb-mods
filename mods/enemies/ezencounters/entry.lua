@@ -11,6 +11,12 @@ local encounter_info = {
         Mettaur="com.keristero.char.Mettaur",
         Gunner="com.keristero.char.Gunner",
     },
+    obstacles = {
+        RockCube=include("obstacles/rock_cube.lua"),
+        Rock=include("obstacles/rock.lua"),
+        Coffin=include("obstacles/coffin.lua"),
+        BlastCube=include("obstacles/blast_cube.lua")
+    },
     tile_states = {
         0,--normal
         1,--cracked
@@ -102,16 +108,16 @@ function package_build(mob,data)
                 {1,1,1,1,1,1}
             },
             obstacles = {
-                {name="RockCube"}
+                {name="RockCube"},
             },
             obstacle_positions = {
-                {0,0,0,0,1,0},
-                {0,0,0,1,0,0},
-                {0,0,0,0,0,0}
+                {0,0,1,0,0,0},
+                {0,0,1,0,0,0},
+                {0,0,1,0,0,0}
             },
             player_positions = {
                 {0,0,0,0,0,0},
-                {0,0,1,0,0,0},
+                {1,0,0,0,0,0},
                 {0,0,0,0,0,0}
             },
             freedom_mission={
@@ -220,6 +226,20 @@ function package_build(mob,data)
             loop_end = data.music.loop_end
         end
         mob:stream_music(_folderpath.."/music/"..data.music.path,loop_start,loop_end)
+    end
+
+    if data.obstacle_positions then
+        for y, x_table in ipairs(data.obstacle_positions) do
+            for x, obstacle_id in ipairs(x_table) do
+                if obstacle_id ~= 0 then
+                    local obstacle_info = data.obstacles[obstacle_id]
+                    local create_obstacle_func = encounter_info.obstacles[obstacle_info.name]
+                    local new_obstacle = create_obstacle_func()
+                    print('spawned obstacle',obstacle_id,obstacle_info,new_obstacle)
+                    field:spawn(new_obstacle,x,y)
+                end
+            end
+        end
     end
 
 end
