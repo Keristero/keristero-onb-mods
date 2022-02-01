@@ -142,7 +142,11 @@ function is_tile_free_for_movement(tile,character)
     --Basic check to see if a tile is suitable for a chracter of a team to move to
     if tile:get_team() ~= character:get_team() then return false end
     if not tile:is_walkable() then return false end
-    local occupants = tile:find_characters(function(other_character)
+    local occupants = tile:find_entities(function(other_entity)
+        if Battle.Character.from(other_entity) == nil and Battle.Obstacle.from(other_entity) == nil then
+            --if it is not a character and it is not an obstacle
+            return false
+        end
         return true
     end)
     if #occupants > 0 then 
