@@ -88,7 +88,7 @@ end
 
 function package_build(mob,data) 
     local field = mob:get_field()
-    --can setup backgrounds, music, and field here
+    --can setup music, and field here
     if not data then
         --test data here
         data = {
@@ -123,9 +123,6 @@ function package_build(mob,data)
             freedom_mission={
                 turn_count=5,
                 player_can_flip=true
-            },
-            background={
-                
             },
             music={
                 path="bcc_battle.mid"
