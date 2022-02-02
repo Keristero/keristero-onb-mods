@@ -1,16 +1,21 @@
-local TEXTURE = Engine.load_texture(_folderpath.."thunder.png")
-local ANIMATION_PATH = _folderpath.."thunder.animation"
-local HIT_TEXTURE = Engine.load_texture(_folderpath.."hit.png")
-local HIT_ANIMATION_PATH = _folderpath.."hit.animation"
-local THUNDER_SFX = Engine.load_audio(_folderpath.."thunder.ogg")
-local HURT_SFX = Engine.load_audio(_folderpath.."hurt.ogg")
+TEXTURE = Engine.load_texture(_modpath.."thunder.png")
+ANIMATION_PATH = _modpath.."thunder.animation"
+HIT_TEXTURE = Engine.load_texture(_modpath.."hit.png")
+HIT_ANIMATION_PATH = _modpath.."hit.animation"
+THUNDER_SFX = Engine.load_audio(_modpath.."thunder.ogg")
+HURT_SFX = Engine.load_audio(_modpath.."hurt.ogg")
 local VERTICAL_OFFSET = -30
 
 
 local thunder = {}
 
-thunder.create_spell = function(character)
-  local spell = Battle.Spell.new(character:get_team())
+
+thunder.create_spell = function(actor)
+  local spell = Battle.Spell.new(actor:get_team())
+
+  -- remember position of actor at time of spawning attack, 
+  -- to prevent the actor from being able to influence the ball afterwards
+  local saved_direction = actor:get_facing()
 
   spell:set_texture(TEXTURE, true)
   spell:highlight_tile(Highlight.Solid)
@@ -31,7 +36,7 @@ thunder.create_spell = function(character)
       40,
       Hit.Flinch | Hit.Stun | Hit.Impact,
       Element.Elec,
-      character:get_id(),
+      actor:get_id(),
       Drag.None
     )
   )
@@ -41,11 +46,11 @@ thunder.create_spell = function(character)
   local elapsed = 0
   local target = nil
 
-  local field = character:get_field()
+  local field = actor:get_field()
 
   spell.update_func = function(_, dt)
     if elapsed > timeout then
-      spell:delete()
+      spell:erase()
     end
 
     elapsed = elapsed + dt
@@ -60,7 +65,7 @@ thunder.create_spell = function(character)
         local character_team = character:get_team()
 
         if (
-          character_team == character:get_team() or
+          character_team == actor:get_team() or
           character_team == Team.Other or
           character:will_erase_eof()
         ) then
@@ -96,7 +101,8 @@ thunder.create_spell = function(character)
     -- If sliding is flagged to false, we know we've ended a move
     if not spell:is_sliding() then
       -- If there are no targets, aimlessly move right or left
-      local direction = character:get_facing()
+      -- (save_direction gets determined once at spawn time)
+      local direction = saved_direction
 
       if target then
         local target_tile = target:get_current_tile()
@@ -122,10 +128,19 @@ thunder.create_spell = function(character)
       -- Always slide to the tile we're moving to
       local next_tile = spell:get_tile(direction, 1)
       spell:slide(next_tile, frames(60), frames(0), ActionOrder.Voluntary)
+
+      -- delete when going off field
+      if tile:is_edge() then
+        spell:erase()
+      end
     end
 
     -- Always affect the tile we're occupying
     tile:attack_entities(spell)
+  end
+
+  spell.collision_func = function(self, other)
+    spell:erase()
   end
 
   spell.attack_func = function()
@@ -143,37 +158,34 @@ thunder.create_spell = function(character)
     field:spawn(artifact, tile:x(), tile:y())
 
     Engine.play_audio(HURT_SFX, AudioPriority.High)
-
-    spell:delete()
   end
 
   spell.can_move_to_func = function() return true end
 
-  local spawn_tile = character:get_tile(character:get_facing(), 1)
+  local spawn_tile = actor:get_tile(actor:get_facing(), 1)
   field:spawn(spell, spawn_tile:x(), spawn_tile:y())
 end
 
-thunder.card_create_action = function(character, props)
+function thunder.card_create_action(actor, props)
   local action = Battle.CardAction.new(actor, "PLAYER_SHOOTING")
   -- action:set_lockout(make_async_lockout(0.67))
   -- action:override_animation_frames(FRAMES)
 
   action.execute_func = function()
     local buster = action:add_attachment("Buster")
-    buster:sprite():set_texture(character:get_texture(), true)
+    buster:sprite():set_texture(actor:get_texture(), true)
     buster:sprite():set_layer(-1)
     buster:sprite():enable_parent_shader(true)
 
     local buster_anim = buster:get_animation()
-    buster_anim:copy_from(character:get_animation())
+    buster_anim:copy_from(actor:get_animation())
     buster_anim:set_state("BUSTER")
 
-    character:get_animation():on_frame(1, function()
-      thunder.create_spell(character)
+    actor:get_animation():on_frame(1, function()
+      thunder.create_spell(actor)
     end, false)
   end
 
   return action
 end
-
 return thunder
