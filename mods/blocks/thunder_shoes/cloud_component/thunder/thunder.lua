@@ -1,9 +1,9 @@
-TEXTURE = Engine.load_texture(_modpath.."thunder.png")
-ANIMATION_PATH = _modpath.."thunder.animation"
-HIT_TEXTURE = Engine.load_texture(_modpath.."hit.png")
-HIT_ANIMATION_PATH = _modpath.."hit.animation"
-THUNDER_SFX = Engine.load_audio(_modpath.."thunder.ogg")
-HURT_SFX = Engine.load_audio(_modpath.."hurt.ogg")
+TEXTURE = Engine.load_texture(_folderpath.."thunder.png")
+ANIMATION_PATH = _folderpath.."thunder.animation"
+HIT_TEXTURE = Engine.load_texture(_folderpath.."hit.png")
+HIT_ANIMATION_PATH = _folderpath.."hit.animation"
+THUNDER_SFX = Engine.load_audio(_folderpath.."thunder.ogg")
+HURT_SFX = Engine.load_audio(_folderpath.."hurt.ogg")
 local VERTICAL_OFFSET = -30
 
 
