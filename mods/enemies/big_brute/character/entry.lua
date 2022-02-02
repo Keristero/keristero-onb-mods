@@ -138,10 +138,17 @@ function big_brute_teleport(character, is_attacking)
     character:card_action_event(teleport_action, ActionOrder.Immediate)
 end
 
-function is_tile_free_for_movement(tile,character)
+function is_tile_free_for_movement(tile,character,must_be_walkable)
     --Basic check to see if a tile is suitable for a chracter of a team to move to
-    if tile:get_team() ~= character:get_team() then return false end
-    if not tile:is_walkable() then return false end
+    if tile:get_team() ~= character:get_team() and tile:get_team() ~= Team.Other then 
+        return false 
+    end
+    if not tile:is_walkable() and must_be_walkable then 
+        return false 
+    end
+    if tile:is_edge() or tile:is_hidden() then
+        return false
+    end
     local occupants = tile:find_entities(function(other_entity)
         if Battle.Character.from(other_entity) == nil and Battle.Obstacle.from(other_entity) == nil then
             --if it is not a character and it is not an obstacle

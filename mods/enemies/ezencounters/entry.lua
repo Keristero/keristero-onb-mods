@@ -8,6 +8,9 @@ local loaded_obstacles = {}
 local encounter_info = {
     enemy_packages = {
         Champy="com.keristero.char.Champy",
+        Chumpy="com.keristero.char.Chumpy",
+        Chimpy="com.keristero.char.Chimpy",
+        RareChampy="com.keristero.char.RareChampy",
         BigBrute="com.keristero.char.BigBrute",
         Mettaur="com.keristero.char.Mettaur",
         Gunner="com.keristero.char.Gunner",
@@ -107,8 +110,8 @@ function package_build(mob,data)
         --test data here
         data = {
             enemies = {
-                {name="Powie3",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
-                {name="Canosmart",rank=1},
+                {name="Chumpy",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
+                {name="Powie2",rank=1},
             },
             positions = {
                 {0,0,0,0,0,2},

@@ -1,5 +1,6 @@
 --Functions for easy reuse in scripts
---Version 1.6
+--Version 1.8 (optionally ignore neutral team for get_first_target_ahead, add is_tile_free_for_movement)
+--Version 1.7 (fixed find targets ahead getting non character/obstacles)
 
 battle_helpers = {}
 
@@ -44,6 +45,9 @@ function battle_helpers.find_targets_ahead(user)
     local user_team = user:get_team()
     local user_facing = user:get_facing()
     local list = field:find_entities(function(entity)
+        if Battle.Character.from(entity) == nil and Battle.Obstacle.from(entity) == nil then
+            return false
+        end
         local entity_tile = entity:get_current_tile()
         if entity_tile:y() == user_tile:y() and entity:get_team() ~= user_team then
             if user_facing == Direction.Left then
@@ -61,19 +65,29 @@ function battle_helpers.find_targets_ahead(user)
     return list
 end
 
-function battle_helpers.get_first_target_ahead(user)
+function battle_helpers.get_first_target_ahead(user,ignore_neutral_team)
     local facing = user:get_facing()
     local targets = battle_helpers.find_targets_ahead(user)
-    table.sort(targets,function (a, b)
+    local filtered_targets = {}
+    if ignore_neutral_team then
+        for index, target in ipairs(targets) do
+            if target:get_team() ~= Team.Other then
+                filtered_targets[#filtered_targets+1] = target
+            end
+        end
+    else
+        filtered_targets = targets
+    end
+    table.sort(filtered_targets,function (a, b)
         return a:get_current_tile():x() > b:get_current_tile():x()
     end)
-    if #targets == 0 then
+    if #filtered_targets == 0 then
         return nil
     end
-    if facing == Direction.Left then
-        return targets[1]
+    if filtered_targets == Direction.Left then
+        return filtered_targets[1]
     else
-        return targets[#targets]
+        return filtered_targets[#filtered_targets]
     end
 end
 
@@ -107,6 +121,31 @@ function battle_helpers.drop_trace_fx(target_artifact,lifetime_ms)
 	local tile = target_artifact:get_current_tile()
     field:spawn(fx, tile:x(), tile:y())
     return fx
+end
+
+function battle_helpers.is_tile_free_for_movement(tile,character,must_be_walkable)
+    --Basic check to see if a tile is suitable for a chracter of a team to move to
+    if tile:get_team() ~= character:get_team() and tile:get_team() ~= Team.Other then 
+        return false 
+    end
+    if not tile:is_walkable() and must_be_walkable then 
+        return false 
+    end
+    if tile:is_edge() or tile:is_hidden() then
+        return false
+    end
+    local occupants = tile:find_entities(function(other_entity)
+        if Battle.Character.from(other_entity) == nil and Battle.Obstacle.from(other_entity) == nil then
+            --if it is not a character and it is not an obstacle
+            return false
+        end
+        return true
+    end)
+    if #occupants > 0 then 
+        return false
+    end
+    
+    return true
 end
 
 return battle_helpers

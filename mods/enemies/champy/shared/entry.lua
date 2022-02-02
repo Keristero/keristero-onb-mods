@@ -81,7 +81,8 @@ local function start_hide(character, target_tile, seconds, callback)
         if not c.target_reserved and self.duration <= seconds-0.240 then
             --a short delay after hiding (15 frames) try retargetting
             local facing = character:get_facing()
-            local target = battle_helpers.get_first_target_ahead(character)
+            local ignore_neutral_team = true
+            local target = battle_helpers.get_first_target_ahead(character,ignore_neutral_team)
             if target ~= nil then
                 local target_tile = target:get_current_tile()
                 local reverse_dir = Direction.reverse(facing)
@@ -282,43 +283,44 @@ local function vanishing_teleport_action(user,target_tile)
     return action
 end
 
-local function package_init(self)
+local function package_init(character)
     debug_print("package_init called")
     --Required function, main package information
 
     --Load character resources
-	self.texture = Engine.load_texture(_folderpath.."battle.greyscaled.png")
-	self.animation = self:get_animation()
-	self.animation:load(_folderpath.."battle.animation")
+	character.texture = Engine.load_texture(_folderpath.."battle.greyscaled.png")
+	character.animation = character:get_animation()
+	character.animation:load(_folderpath.."battle.animation")
 
     --Set up character meta
-    self:set_name(enemy_info.name)
-    self:set_texture(self.texture, true)
-    self:set_height(30)
-    self:share_tile(false)
-    self:set_explosion_behavior(2, 1.0, false)
-    self:set_offset(0, 0)
+    character:set_name(enemy_info.name)
+    character:set_texture(character.texture, true)
+    character:set_height(30)
+    character:share_tile(false)
+    character:set_explosion_behavior(2, 1.0, false)
+    character:set_offset(0, 0)
 
     --defense rules
-    self.defense = Battle.DefenseVirusBody.new()
-    self:add_defense_rule(self.defense)
+    character.defense = Battle.DefenseVirusBody.new()
+    character:add_defense_rule(character.defense)
     
     --Initial state
-    self.animation:set_state("IDLE")
-    self.animation:set_playback(Playback.Loop)
-    self.ai_state = "spawning"
-    self.ai_timer = 0
-    self._punch_twice = false
-    self._punch_damage = 20
-    self._reveal_time = 60
-    self._idle_steps_before_return = 2
+    character.animation:set_state("IDLE")
+    character.animation:set_playback(Playback.Loop)
+    character.ai_state = "spawning"
+    character.ai_timer = 0
+    character._punch_twice = false
+    character._punch_damage = 20
+    character._reveal_time = 60
+    character._idle_steps_before_return = 2
 
-    self.update_func = function (self,dt)
+    character.update_func = function (self,dt)
         local character = self
         local character_facing = character:get_facing()
         --debug_print("original update_func called: "..character.ai_state)
         if character.ai_state == "idle" then
-            local target = battle_helpers.get_first_target_ahead(character)
+            local ignore_neutral_team = true
+            local target = battle_helpers.get_first_target_ahead(character,ignore_neutral_team)
             if target == nil then
                 return
             end
@@ -351,21 +353,21 @@ local function package_init(self)
             character.ai_state = "idle"
         end
     end
-    self.battle_start_func = function (self)
+    character.battle_start_func = function (self)
         self.ai_state = "idle"
         debug_print("battle_start_func called")
     end
-    self.battle_end_func = function (self)
+    character.battle_end_func = function (self)
         debug_print("battle_end_func called")
     end
-    self.on_spawn_func = function (self, spawn_tile) 
+    character.on_spawn_func = function (self, spawn_tile) 
         debug_print("on_spawn_func called")
    end
-    self.can_move_to_func = function (tile)
+    character.can_move_to_func = function (tile)
         debug_print("can_move_to_func called")
-        return not(tile:is_edge() or tile:is_hidden())
+        return battle_helpers.is_tile_free_for_movement(tile,character,true)
     end
-    self.delete_func = function (self)
+    character.delete_func = function (self)
         debug_print("delete_func called")
     end
 end
