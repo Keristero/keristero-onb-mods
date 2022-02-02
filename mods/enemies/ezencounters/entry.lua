@@ -3,6 +3,7 @@ local package_name = "ezencounters"
 
 --Everything under this comment is standard and does not need to be edited\
 local mob_package_id = "com."..package_prefix..".mob."..package_name
+local loaded_obstacles = {}
 
 local encounter_info = {
     enemy_packages = {
@@ -87,7 +88,7 @@ function package_build(mob,data)
     --First a work around to not crash the server, include the obstacle scripts here rather than in global scope
     for obstacle_alias, script_path in pairs(encounter_info.obstacles) do
         print('[ezencounters] including '..script_path)
-        encounter_info.obstacles[obstacle_alias] = include(script_path)
+        loaded_obstacles[obstacle_alias] = include(script_path)
     end
     --work around end
 
@@ -238,7 +239,7 @@ function package_build(mob,data)
             for x, obstacle_id in ipairs(x_table) do
                 if obstacle_id ~= 0 then
                     local obstacle_info = data.obstacles[obstacle_id]
-                    local create_obstacle_func = encounter_info.obstacles[obstacle_info.name]
+                    local create_obstacle_func = loaded_obstacles[obstacle_info.name]
                     local new_obstacle = create_obstacle_func()
                     print('spawning obstacle '..obstacle_info.name..' at '..x..','..y)
                     field:spawn(new_obstacle,x,y)
