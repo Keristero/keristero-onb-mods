@@ -12,10 +12,10 @@ local encounter_info = {
         Gunner="com.keristero.char.Gunner",
     },
     obstacles = {
-        RockCube=include("obstacles/rock_cube.lua"),
-        Rock=include("obstacles/rock.lua"),
-        Coffin=include("obstacles/coffin.lua"),
-        BlastCube=include("obstacles/blast_cube.lua")
+        RockCube="obstacles/rock_cube.lua",
+        Rock="obstacles/rock.lua",
+        Coffin="obstacles/coffin.lua",
+        BlastCube="obstacles/blast_cube.lua"
     },
     tile_states = {
         0,--normal
@@ -70,9 +70,6 @@ function package_requires_scripts()
         print('[ezencounters] requiring '..package)
         Engine.requires_character(package)
     end
-    for index, value in ipairs(encounter_info.enemy_ranks) do
-        print('[ezencounters] ranks '..index..' = '..value)
-    end
 end
 
 function get_package_id(alias) 
@@ -87,33 +84,44 @@ function package_init(package)
 end
 
 function package_build(mob,data) 
+    --First a work around to not crash the server, include the obstacle scripts here rather than in global scope
+    for obstacle_alias, script_path in pairs(encounter_info.obstacles) do
+        print('[ezencounters] including '..script_path)
+        encounter_info.obstacles[obstacle_alias] = include(script_path)
+    end
+    --work around end
+
     local field = mob:get_field()
     --can setup music, and field here
     if not data then
         --test data here
         data = {
-            weight=10,
             enemies = {
                 {name="BigBrute",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
                 {name="Gunner",rank=1},
             },
             positions = {
-                {0,0,0,2,0,0},
+                {0,0,0,0,0,2},
                 {0,0,0,0,1,0},
                 {0,0,0,0,0,2}
             },
             tiles = {
-                {1,1,1,1,1,1},
-                {1,1,1,1,1,1},
-                {1,1,1,1,1,1}
+                {1,1,9,9,1,1},
+                {1,1,9,9,1,1},
+                {1,1,9,9,1,1}
+            },
+            teams = {
+                {2,2,0,0,1,1},
+                {2,2,0,0,1,1},
+                {2,2,0,0,1,1}
             },
             obstacles = {
                 {name="RockCube"},
             },
             obstacle_positions = {
-                {0,0,1,0,0,0},
-                {0,0,1,0,0,0},
-                {0,0,1,0,0,0}
+                {0,0,1,1,0,0},
+                {0,0,1,1,0,0},
+                {0,0,1,1,0,0}
             },
             player_positions = {
                 {0,0,0,0,0,0},
@@ -232,7 +240,7 @@ function package_build(mob,data)
                     local obstacle_info = data.obstacles[obstacle_id]
                     local create_obstacle_func = encounter_info.obstacles[obstacle_info.name]
                     local new_obstacle = create_obstacle_func()
-                    print('spawned obstacle',obstacle_id,obstacle_info,new_obstacle)
+                    print('spawning obstacle '..obstacle_info.name..' at '..x..','..y)
                     field:spawn(new_obstacle,x,y)
                 end
             end

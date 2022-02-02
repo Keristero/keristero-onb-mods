@@ -58,7 +58,6 @@ local function create_obstacle_from_data(obstacle_data)
                     continued_slide_dir = Direction.Left
                 end
             end
-            print('continued slide dir=', continued_slide_dir)
             return true
         end
     end
