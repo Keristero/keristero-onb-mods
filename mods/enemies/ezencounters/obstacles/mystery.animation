@@ -1,0 +1,12 @@
+animation state="IDLE"
+frame duration="0.1" x="43" y="64" w="26" h="53" originx="13" originy="51"
+frame duration="0.1" x="47" y="0" w="22" h="59" originx="11" originy="53"
+frame duration="0.1" x="69" y="64" w="20" h="52" originx="8" originy="49"
+frame duration="0.1" x="69" y="0" w="26" h="59" originx="13" originy="57"
+frame duration="0.1" x="0" y="0" w="28" h="64" originx="14" originy="59"
+frame duration="0.1" x="20" y="64" w="23" h="54" originx="12" originy="51"
+frame duration="0.1" x="28" y="0" w="19" h="61" originx="8" originy="56"
+frame duration="0.1" x="0" y="64" w="20" h="58" originx="8" originy="52"
+
+animation state="GET"
+frame duration="0.1" x="0" y="122" w="44" h="23" originx="22" originy="22"

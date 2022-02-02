@@ -28,7 +28,9 @@ local encounter_info = {
         RockCube="obstacles/rock_cube.lua",
         Rock="obstacles/rock.lua",
         Coffin="obstacles/coffin.lua",
-        BlastCube="obstacles/blast_cube.lua"
+        BlastCube="obstacles/blast_cube.lua",
+        IceCube="obstacles/ice_cube.lua",
+        MysteryData="obstacles/mystery.lua",
     },
     tile_states = {
         0,--normal
@@ -110,43 +112,25 @@ function package_build(mob,data)
         --test data here
         data = {
             enemies = {
-                {name="Chumpy",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
-                {name="Powie2",rank=1},
+                {name="Mettaur",rank=1},
+                {name="Mettaur",rank=2},
+                {name="Mettaur",rank=3},
             },
             positions = {
-                {0,0,0,0,0,2},
-                {0,0,0,0,1,0},
-                {0,0,0,0,0,2}
-            },
-            tiles = {
-                {1,1,9,9,1,1},
-                {1,1,9,9,1,1},
-                {1,1,9,9,1,1}
-            },
-            teams = {
-                {2,2,0,0,1,1},
-                {2,2,0,0,1,1},
-                {2,2,0,0,1,1}
+                {0,0,0,1,0,0},
+                {0,0,0,0,2,0},
+                {0,0,0,0,0,3}
             },
             obstacles = {
-                {name="RockCube"},
+                {name="MysteryData"}
             },
             obstacle_positions = {
-                {0,0,1,1,0,0},
-                {0,0,1,1,0,0},
-                {0,0,1,1,0,0}
-            },
-            player_positions = {
                 {0,0,0,0,0,0},
-                {1,0,0,0,0,0},
+                {0,0,1,0,0,0},
                 {0,0,0,0,0,0}
             },
-            freedom_mission={
-                turn_count=5,
-                player_can_flip=true
-            },
             music={
-                path="bcc_battle.mid"
+                path="bn1_battle.mid"
             }
         }
     end

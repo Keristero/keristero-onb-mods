@@ -18,6 +18,15 @@ local function create_obstacle_from_data(obstacle_data)
                                Element.None, nil, Drag.None)
     obstacle:set_hit_props(props)
 
+    local destroy_obstacle_func = function (obstacle)
+        if not obstacle_data.is_mystery then
+            anim:set_state("DESTROY")
+            anim:on_complete(function() obstacle:delete() end)
+        else
+            obstacle:delete()
+        end
+    end
+
     if obstacle_data.invincible then
         local invincible_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
         invincible_defense_rule.can_block_func = function(judge, attacker, defender)
@@ -38,8 +47,7 @@ local function create_obstacle_from_data(obstacle_data)
             local attacker_hit_props = attacker:copy_hit_props()
             if attacker_hit_props.damage > 0 then
                 if attacker_hit_props.flags & Hit.Breaking == Hit.Breaking then
-                    anim:set_state("DESTROY")
-                    anim:on_complete(function() obstacle:delete() end)
+                    destroy_obstacle_func(obstacle)
                 end
             end
         end
@@ -62,8 +70,7 @@ local function create_obstacle_from_data(obstacle_data)
         end
     end
     obstacle.attack_func = function(self)
-        anim:set_state("DESTROY")
-        anim:on_complete(function() obstacle:delete() end)
+        destroy_obstacle_func(self)
     end
     obstacle.update_func = function(self, dt)
         local tile = self:get_current_tile()
