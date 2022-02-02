@@ -11,6 +11,15 @@ local encounter_info = {
         BigBrute="com.keristero.char.BigBrute",
         Mettaur="com.keristero.char.Mettaur",
         Gunner="com.keristero.char.Gunner",
+        Cactikil="com.discord.Konstinople#7692.enemy.cactikil",
+        Cactroll="com.discord.Konstinople#7692.enemy.cactroll",
+        Cacter="com.discord.Konstinople#7692.enemy.cacter",
+        Powie="com.discord.Konstinople#7692.enemy.powie",
+        Powie2="com.discord.Konstinople#7692.enemy.powie2",
+        Powie3="com.discord.Konstinople#7692.enemy.powie2",
+        Spikey="com.Dawn.char.Spikey",
+        Canodumb="com.discord.Konstinople#7692.enemy.canodumb",
+        Canosmart="com.dawn.enemy.canosmart"
     },
     obstacles = {
         RockCube="obstacles/rock_cube.lua",
@@ -98,8 +107,8 @@ function package_build(mob,data)
         --test data here
         data = {
             enemies = {
-                {name="BigBrute",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
-                {name="Gunner",rank=1},
+                {name="Powie3",rank=1,max_hp=500,starting_hp=500,nickname="Doggie"},
+                {name="Canosmart",rank=1},
             },
             positions = {
                 {0,0,0,0,0,2},
