@@ -2,7 +2,6 @@ local MobTracker = include("mob_tracker.lua")
 local battle_helpers = include("battle_helpers.lua")
 local left_mob_tracker = MobTracker:new()
 local right_mob_tracker = MobTracker:new()
-local character_info = {name = "Mettaur", hp = 40,height=20,damage = 10}
 
 local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
 local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
@@ -74,8 +73,10 @@ function package_init(self,character_info)
     -- Initial state
     self.animation:set_state("IDLE")
     self.animation:set_playback(Playback.Loop)
-    self.frames_between_actions = 40 
-    self.cascade_frame_index = character_info.shockwave_cascade_frame_index --lower = faster shockwaves
+    self.frames_between_actions = character_info.move_delay
+    self.cascade_frame_index = character_info.cascade_frame --lower = faster shockwaves
+    self.shockwave_animation = character_info.shockwave_animation
+    self.shockwave_damage = character_info.damage
     self.ai_wait = self.frames_between_actions
     self.ai_taken_turn = false
 
@@ -195,7 +196,7 @@ function action_shockwave(character)
         end)
 		self:add_anim_action(12,function()
             local tile = character:get_tile(facing,1)
-            spawn_shockwave(character, tile, facing, character_info.damage, wave_texture, wave_sfx, character.cascade_frame_index)
+            spawn_shockwave(character, tile, facing, character.shockwave_damage, wave_texture,character.shockwave_animation, wave_sfx, character.cascade_frame_index)
         end)
         self:add_anim_action(13,function ()
             character:toggle_counter(false)
@@ -217,7 +218,7 @@ function is_tile_free_for_movement(tile,character)
     return true
 end
 
-function spawn_shockwave(owner, tile, direction, damage, wave_texture, wave_sfx, cascade_frame_index)
+function spawn_shockwave(owner, tile, direction, damage, wave_texture,wave_animation, wave_sfx, cascade_frame_index)
     local owner_id = owner:get_id()
     local team = owner:get_team()
     local field = owner:get_field()
@@ -238,7 +239,7 @@ function spawn_shockwave(owner, tile, direction, damage, wave_texture, wave_sfx,
         sprite:set_layer(-1)
 
         local animation = spell:get_animation()
-        animation:load(_modpath .. "shockwave.animation")
+        animation:load(_folderpath .. wave_animation)
         animation:set_state("DEFAULT")
         animation:refresh(sprite)
 
