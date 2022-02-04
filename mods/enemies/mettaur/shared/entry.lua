@@ -3,11 +3,14 @@ local battle_helpers = include("battle_helpers.lua")
 local left_mob_tracker = MobTracker:new()
 local right_mob_tracker = MobTracker:new()
 
-local wave_texture = Engine.load_texture(_modpath .. "shockwave.png")
-local wave_sfx = Engine.load_audio(_modpath .. "shockwave.ogg")
-local teleport_animation_path = _modpath .. "teleport.animation"
-local teleport_texture_path = _modpath .. "teleport.png"
+local wave_texture = Engine.load_texture(_folderpath .. "shockwave.png")
+local wave_sfx = Engine.load_audio(_folderpath .. "shockwave.ogg")
+local teleport_animation_path = _folderpath .. "teleport.animation"
+local teleport_texture_path = _folderpath .. "teleport.png"
 local teleport_texture = Engine.load_texture(teleport_texture_path)
+local guard_hit_effect_texture = Engine.load_texture(_folderpath .. "guard_hit.png")
+local guard_hit_effect_animation_path = _folderpath .. "guard_hit.animation"
+local tink_sfx = Engine.load_audio(_folderpath .. "tink.ogg")
 
 local function debug_print(text)
     --print("[mettaur] " .. text)
@@ -50,9 +53,9 @@ function package_init(self,character_info)
     -- Required function, main package information
 
     -- Load character resources
-    self.texture = Engine.load_texture(_modpath .. "battle.greyscaled.png")
+    self.texture = Engine.load_texture(_folderpath .. "battle.greyscaled.png")
     self.animation = self:get_animation()
-    self.animation:load(_modpath .. "battle.animation")
+    self.animation:load(_folderpath .. "battle.animation")
 
     -- Load extra resources
 
@@ -77,6 +80,7 @@ function package_init(self,character_info)
     self.cascade_frame_index = character_info.cascade_frame --lower = faster shockwaves
     self.shockwave_animation = character_info.shockwave_animation
     self.shockwave_damage = character_info.damage
+    self.can_guard = character_info.can_guard
     self.ai_wait = self.frames_between_actions
     self.ai_taken_turn = false
 
@@ -87,6 +91,8 @@ function package_init(self,character_info)
         local active_mob_id = get_active_mob_id_for_same_direction(facing)
         if active_mob_id == id then
             take_turn(self)
+        else
+            idle_action(self)
         end
     end
 
@@ -136,13 +142,72 @@ function find_target(self)
     return target_character
 end
 
+function idle_action(self)
+    if self.can_guard then
+        --if the mettaur can guard, queue up a guard for after the current action
+        if self.guarding_defense_rule then
+            local anim = self:get_animation()
+            anim:set_state("GUARD_PERSIST")
+        elseif not self.guard_transition then
+            begin_guard(self)
+        end
+    end
+end
+
+function end_guard(character)
+    character.guard_transition = true
+    local anim = character:get_animation()
+    anim:set_state("GUARD_END")
+    anim:set_playback(Playback.Once)
+    character:remove_defense_rule(character.guarding_defense_rule)
+    character.guarding_defense_rule = nil
+    anim:on_complete(function()
+        character.guard_transition = false
+	end)
+end
+
+function begin_guard(character)
+    character.guard_transition = true
+    local anim = character:get_animation()
+    anim:set_state("GUARD_START")
+    anim:set_playback(Playback.Once)
+    
+    anim:on_complete(function()
+        character.guard_transition = false
+        character.guarding_defense_rule = Battle.DefenseRule.new(0,DefenseOrder.Always)
+        character.guarding_defense_rule.can_block_func = function(judge, attacker, defender)
+            local attacker_hit_props = attacker:copy_hit_props()
+            if attacker_hit_props.flags & Hit.Breaking == Hit.Breaking then
+                --cant block breaking hits with guard
+                return
+            end
+            judge:block_impact()
+            judge:block_damage()
+            if attacker_hit_props.damage > 0 then
+                Engine.play_audio(tink_sfx, AudioPriority.Highest)
+                battle_helpers.spawn_visual_artifact(character,character:get_current_tile(),guard_hit_effect_texture,guard_hit_effect_animation_path,"DEFAULT",0,-30)
+            end
+        end
+        character:add_defense_rule(character.guarding_defense_rule)
+	end)
+end
+
 function take_turn(self)
     local id = self:get_id()
+    self.guard_transition = false
     if self.ai_wait > 0 or self.ai_taken_turn then
         self.ai_wait = self.ai_wait - 1
         return
     end
     self.ai_taken_turn = true
+    
+    if self.guarding_defense_rule and not self.guard_transition then
+        self.ai_wait = self.frames_between_actions
+        self.ai_taken_turn = false
+        end_guard(self)
+        return
+    end
+
     local moved = move_towards_character(self)
     if moved then
         self.ai_wait = self.frames_between_actions
@@ -150,15 +215,13 @@ function take_turn(self)
         return
     end
     local shockwave_action = action_shockwave(self)
-    local next_action = shockwave_action
-    next_action.action_end_func = function()
+    shockwave_action.action_end_func = function()
         local facing = self:get_facing()
         self.ai_wait = self.frames_between_actions
         self.ai_taken_turn = false
         advance_a_turn_by_facing(facing)
     end
-    self:card_action_event(next_action, ActionOrder.Voluntary)
-
+    self:card_action_event(shockwave_action, ActionOrder.Voluntary)
 end
 
 function move_towards_character(self)
