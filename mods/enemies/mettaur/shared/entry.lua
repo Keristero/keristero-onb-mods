@@ -194,9 +194,12 @@ end
 
 function take_turn(self)
     local id = self:get_id()
-    self.guard_transition = false
     if self.ai_wait > 0 or self.ai_taken_turn then
         self.ai_wait = self.ai_wait - 1
+        if not self.guarding_defense_rule and not self.guard_transition and not self.shockwave_action then
+            local anim = self:get_animation()
+            anim:set_state("IDLE")
+        end
         return
     end
     self.ai_taken_turn = true
@@ -214,14 +217,15 @@ function take_turn(self)
         self.ai_taken_turn = false
         return
     end
-    local shockwave_action = action_shockwave(self)
-    shockwave_action.action_end_func = function()
+    self.shockwave_action = action_shockwave(self)
+    self.shockwave_action.action_end_func = function()
         local facing = self:get_facing()
         self.ai_wait = self.frames_between_actions
         self.ai_taken_turn = false
+        self.shockwave_action = nil
         advance_a_turn_by_facing(facing)
     end
-    self:card_action_event(shockwave_action, ActionOrder.Voluntary)
+    self:card_action_event(self.shockwave_action, ActionOrder.Voluntary)
 end
 
 function move_towards_character(self)

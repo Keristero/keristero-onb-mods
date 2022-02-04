@@ -120,9 +120,9 @@ function package_build(mob,data)
                 {name="Mettaur",rank=7},
             },
             positions = {
-                {0,0,0,2,0,0},
+                {0,0,0,2,3,6},
                 {0,0,0,0,0,2},
-                {0,0,0,0,2,0}
+                {0,0,0,3,2,0}
             },
             obstacles = {
                 {name="MysteryData"}
