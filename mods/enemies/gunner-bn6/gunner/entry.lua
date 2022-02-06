@@ -10,11 +10,14 @@ function package_init(character)
   elseif character:get_rank() == Rank.SP then
     character:set_palette(Engine.load_texture(_modpath.."gunnersp.palette.png"))
     character:set_health(250)
+    character.bullet_damage = 70
   elseif character:get_rank() == Rank.Rare1 then
     character:set_palette(Engine.load_texture(_modpath.."raregunner.palette.png"))
     character:set_health(180)
+    character.bullet_damage = 40
   elseif character:get_rank() == Rank.Rare2 then
     character:set_palette(Engine.load_texture(_modpath.."raregunner2.palette.png"))
     character:set_health(250)
+    character.bullet_damage = 90
   end
 end

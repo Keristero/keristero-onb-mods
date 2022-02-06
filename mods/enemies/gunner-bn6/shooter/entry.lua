@@ -9,6 +9,14 @@ function package_init(character)
     character.sweeping_reticle = true
     character.reticle_travel_frames = 30
     character.shots = 5
+    character.bullet_damage = 30
     character:set_health(140)
-  end
+  elseif character:get_rank() == Rank.SP then
+      character:set_palette(Engine.load_texture(_modpath.."shootersp.palette.png"))
+      character.sweeping_reticle = true
+      character.reticle_travel_frames = 20
+      character.shots = 10
+      character.bullet_damage = 90
+      character:set_health(400)
+    end
 end

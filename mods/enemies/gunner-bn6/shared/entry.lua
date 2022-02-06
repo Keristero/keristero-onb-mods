@@ -78,7 +78,8 @@ function spell_reticle(character,scan_finished_callback,reticle_travel_frames,sw
         local current_animation_state = anim:get_state()
         if current_animation_state == "RETICLE_MOVE" then
             local current_tile = spell:get_current_tile()
-            if current_tile:is_edge() then
+            local sweeper_misplaced = current_tile:get_team() == team
+            if current_tile:is_edge() or (sweep and sweeper_misplaced) then
                 scan_finished_callback(current_tile,false)
                 spell:delete()
                 return
@@ -160,11 +161,10 @@ function action_fire(character,target_tile,shots,shots_animated)
         local sweep_direction = character:get_facing()
         if sweeping then
             for i = 0, action.bullets_fired, 1 do
-                local next_tile_distance = math.min(1,action.bullets_fired)
-                scanned_tile = scanned_tile:get_tile(sweep_direction,next_tile_distance)
+                scanned_tile = scanned_tile:get_tile(sweep_direction,math.min(i,1))
                 if sweep_should_switch_direction(scanned_tile,team) then
                     sweep_direction = Direction.reverse(sweep_direction)
-                    scanned_tile = scanned_tile:get_tile(sweep_direction,next_tile_distance)
+                    scanned_tile = scanned_tile:get_tile(sweep_direction,2)
                 end
             end
         end
@@ -213,7 +213,7 @@ function action_scan(character)
                 if target_was_found then
                     character.ai_state = "firing"
                     character.animation:set_state("PRE_FIRING")
-                    character.attack_action = action_fire(character,tile,character.shots,character.shots+3)
+                    character.attack_action = action_fire(character,tile,character.shots,character.shots*2)
                     character.attack_action.action_end_func = function ()
                         character.ai_state = "cooldown"
                         character.cooldown = 30
