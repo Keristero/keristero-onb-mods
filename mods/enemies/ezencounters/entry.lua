@@ -14,6 +14,8 @@ local encounter_info = {
         BigBrute="com.keristero.char.BigBrute",
         Mettaur="com.keristero.char.Mettaur",
         Gunner="com.keristero.char.Gunner",
+        Shooter="com.keristero.char.Shooter",
+        Sniper="com.keristero.char.Sniper",
         Cactikil="com.discord.Konstinople#7692.enemy.cactikil",
         Cactroll="com.discord.Konstinople#7692.enemy.cactroll",
         Cacter="com.discord.Konstinople#7692.enemy.cacter",
@@ -112,25 +114,14 @@ function package_build(mob,data)
         --test data here
         data = {
             enemies = {
-                {name="Mettaur",rank=1},
-                {name="Mettaur",rank=2},
-                {name="Mettaur",rank=3},
-                {name="Mettaur",rank=4},
-                {name="Mettaur",rank=6},
-                {name="Mettaur",rank=7},
+                {name="Gunner",rank=1},
+                {name="Shooter",rank=1},
+                {name="Sniper",rank=1},
             },
             positions = {
-                {0,0,0,2,3,6},
-                {0,0,0,0,0,2},
-                {0,0,0,3,2,0}
-            },
-            obstacles = {
-                {name="MysteryData"}
-            },
-            obstacle_positions = {
-                {0,0,0,0,0,0},
-                {0,0,1,0,0,0},
-                {0,0,0,0,0,0}
+                {0,0,0,1,0,0},
+                {0,0,0,0,2,0},
+                {0,0,0,0,0,3}
             },
             music={
                 path="bn1_battle.mid"

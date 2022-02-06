@@ -57,8 +57,11 @@ function spell_delayed_bullet(character,target_tile,damage)
     return spell
 end
 
-function spell_reticle(character,scan_finished_callback)
-    local facing = character:get_facing()
+local function sweep_should_switch_direction(next_tile,team)
+    return (next_tile:is_edge() or next_tile:get_team() == team)
+end
+
+function spell_reticle(character,scan_finished_callback,reticle_travel_frames,sweep)
     local team = character:get_team()
     local spell = Battle.Spell.new(team)
     local anim = spell:get_animation()
@@ -70,6 +73,7 @@ function spell_reticle(character,scan_finished_callback)
     anim:set_playback(Playback.Loop)
     spell:set_offset(0,-20)
     sprite:set_layer(-4)
+    spell.move_direction = character:get_facing()
     spell.update_func = function (self)
         local current_animation_state = anim:get_state()
         if current_animation_state == "RETICLE_MOVE" then
@@ -79,7 +83,7 @@ function spell_reticle(character,scan_finished_callback)
                 spell:delete()
                 return
             end
-            local next_tile = spell:get_tile(facing,1)
+            local next_tile = spell:get_tile(spell.move_direction,1)
             if not spell:is_sliding() then
                 local targets = current_tile:find_characters(function (enemy)
                     return enemy:get_team() ~= team
@@ -88,11 +92,23 @@ function spell_reticle(character,scan_finished_callback)
                     anim:set_state("RETICLE_LOCK")              
                     Engine.play_audio(scanning_lock_sfx, AudioPriority.Highest)
                     anim:on_complete(function()
-                        scan_finished_callback(current_tile,true)
                         spell:delete()
+                        pcall(function ()
+                            scan_finished_callback(current_tile,true)
+                        end)
                     end)
                 else
-                    spell:slide(next_tile,frames(13),frames(0),ActionOrder.Voluntary)
+                    if not sweep then
+                        --just slide like normal
+                        spell:slide(next_tile,frames(reticle_travel_frames),frames(0),ActionOrder.Voluntary)
+                        return
+                    end
+                    local reticle_should_switch_direction = sweep_should_switch_direction(next_tile,team)
+                    if reticle_should_switch_direction then
+                        spell.move_direction = Direction.reverse(spell.move_direction)
+                    else
+                        spell:slide(next_tile,frames(reticle_travel_frames),frames(0),ActionOrder.Voluntary)
+                    end
                 end
             end
         end
@@ -103,35 +119,83 @@ function spell_reticle(character,scan_finished_callback)
     return spell
 end
 
-function action_fire(character,target_tile)
-    local action = Battle.CardAction.new(character, "FIRING")
+function action_fire(character,target_tile,shots,shots_animated)
+    local action = Battle.CardAction.new(character,"FIRING")
     local field = character:get_field()
+    local team = character:get_team()
+    local sweeping = character.sweeping_reticle
 	action:set_lockout(make_animation_lockout())
+
+    local f_idle = {1,0.016}
+    local f_flash_left = {2,0.016}
+    local f_left_fade_1 = {3,0.016}
+    local f_left_fade_2 = {4,0.032}
+    local f_left_fade_3 = {5,0.016}
+    local f_flash_right = {6,0.016}
+    local f_right_fade_1 = {7,0.016}
+    local f_right_fade_2 = {8,0.032}
+    local f_right_fade_3 = {9,0.016}
+    action.frames = {}
+    local animate_left = true
+    for i = 1, shots_animated, 1 do
+        if animate_left then
+            table.insert(action.frames,f_flash_left)
+            table.insert(action.frames,f_left_fade_1)
+            table.insert(action.frames,f_left_fade_2)
+            table.insert(action.frames,f_left_fade_3)
+            animate_left = false
+        else
+            table.insert(action.frames,f_flash_right)
+            table.insert(action.frames,f_right_fade_1)
+            table.insert(action.frames,f_right_fade_2)
+            table.insert(action.frames,f_right_fade_3)
+            animate_left = true
+        end
+    end
+    local FRAME_DATA = make_frame_data(action.frames)
+    action:override_animation_frames(FRAME_DATA)
+
     local function gun_shooty_pew()
-        local spell_bullet = spell_delayed_bullet(character,target_tile,character.bullet_damage)
-        field:spawn(spell_bullet, target_tile:x(), target_tile:y())
+        local scanned_tile = target_tile
+        local sweep_direction = character:get_facing()
+        if sweeping then
+            for i = 0, action.bullets_fired, 1 do
+                local next_tile_distance = math.min(1,action.bullets_fired)
+                scanned_tile = scanned_tile:get_tile(sweep_direction,next_tile_distance)
+                if sweep_should_switch_direction(scanned_tile,team) then
+                    sweep_direction = Direction.reverse(sweep_direction)
+                    scanned_tile = scanned_tile:get_tile(sweep_direction,next_tile_distance)
+                end
+            end
+        end
+        local spell_bullet = spell_delayed_bullet(character,scanned_tile,character.bullet_damage)
+        field:spawn(spell_bullet, scanned_tile:x(), scanned_tile:y())
         Engine.play_audio(gun_sfx, AudioPriority.Highest)
+        action.bullets_fired = action.bullets_fired + 1
     end
     action.execute_func = function (self,user)
-        self:add_anim_action(2,function ()
-            user:toggle_counter(true)
+        action.bullets_fired = 0
+        user:toggle_counter(true)
+        self:add_anim_action(1,function()
             gun_shooty_pew()
         end)
-        self:add_anim_action(11,function ()
+        self:add_anim_action(10,function()
             user:toggle_counter(false)
-            gun_shooty_pew()
         end)
-        self:add_anim_action(20,gun_shooty_pew)
-    end
-    action.update_func = function (self)
+        for i = 1, shots, 1 do
+            self:add_anim_action(1+(i*8),function()
+                gun_shooty_pew()
+            end)
+        end
     end
     return action
 end
 
 function action_scan(character)
     local field = character:get_field()
+    local team = character:get_team()
     local facing = character:get_facing()
-    local current_tile = character:get_current_tile()
+    local reticle_spawn_tile = character:get_current_tile()
 
     Engine.play_audio(scanning_click_sfx, AudioPriority.Highest)
 
@@ -142,14 +206,14 @@ function action_scan(character)
     end
     action.execute_func = function(self, user)
         self:add_anim_action(4,function ()
-            if action.reticle_spell then
+            if self.reticle_spell then
                 return
             end
             local scan_finished_callback = function (tile,target_was_found)
                 if target_was_found then
                     character.ai_state = "firing"
                     character.animation:set_state("PRE_FIRING")
-                    character.attack_action = action_fire(user,tile)
+                    character.attack_action = action_fire(character,tile,character.shots,character.shots+3)
                     character.attack_action.action_end_func = function ()
                         character.ai_state = "cooldown"
                         character.cooldown = 30
@@ -159,20 +223,23 @@ function action_scan(character)
                     character.ai_state = "cooldown"
                     character.cooldown = 30
                 end
-                self:end_action()
+                if self then
+                    self:end_action()
+                end
             end
-            action.reticle_spell = spell_reticle(character,scan_finished_callback)
-            action.reticle_spell.on_delete = function ()
-                action.reticle_spell = nil
+            self.reticle_spell = spell_reticle(character,scan_finished_callback,character.reticle_travel_frames,character.sweeping_reticle)
+            self.reticle_spell.on_delete = function ()
+                self.reticle_spell = nil
             end
-            field:spawn(action.reticle_spell, current_tile:x(), current_tile:y())
+            if character.sweeping_reticle then
+                --for reticles that sweep back and forth, find first tile of another team's to spawn the reticle on
+                while reticle_spawn_tile:get_team() == team do
+                    reticle_spawn_tile = reticle_spawn_tile:get_tile(facing,1)
+                end
+            end
+            field:spawn(self.reticle_spell, reticle_spawn_tile:x(), reticle_spawn_tile:y())
         end)
 	end
-    action.action_end_func = function ()
-        if action.reticle_spell then
-            action.reticle_spell:delete()
-        end
-    end
     return action
 end
 
@@ -200,13 +267,13 @@ local function package_init(self)
     self.bullet_damage = 10
     self.ai_state = "idle"
     self.cooldown = 30
+    self.reticle_travel_frames = 13
+    self.sweeping_reticle = false
+    self.shots = 3
     local character = self
 
     local scanning_interrupt = function ()
         if character.current_scan_action then
-            if character.current_scan_action.reticle_spell then
-                character.current_scan_action.reticle_spell:delete()
-            end
             character.current_scan_action:end_action()
         end
         self.ai_state = "idle"
@@ -234,6 +301,9 @@ local function package_init(self)
             if #filtered_targets > 0 then
                 local action = action_scan(character)
                 action.action_end_func = function ()
+                    if action.reticle_spell then
+                        action.reticle_spell:delete()
+                    end
                     character.current_scan_action = nil
                 end
                 character.current_scan_action = action
