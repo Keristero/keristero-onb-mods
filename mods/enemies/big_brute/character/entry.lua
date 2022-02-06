@@ -44,10 +44,10 @@ function package_init(self)
     self.animation:set_state("IDLE")
     self.animation:set_playback(Playback.Loop)
     self.ai_state = "spawning"
-    self.ai_timer = 0
     self.ai_jumps = 0
     self.ai_target_jumps = math.random(4, 5)
     self.frames_between_jumps = 40
+    self.ai_timer = self.frames_between_jumps
 
     self.update_func = function(self, dt)
         local character = self

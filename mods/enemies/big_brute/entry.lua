@@ -14,7 +14,7 @@ function package_init(package)
     print('package init for '..mob_package_id)
     package:declare_package_id(mob_package_id)
     package:set_name(character_name)
-    package:set_description("test fight with a "..character_name)
+    package:set_description("BN5 accurate "..character_name)
     package:set_preview_texture_path(_modpath.."preview.png")
 end
 
