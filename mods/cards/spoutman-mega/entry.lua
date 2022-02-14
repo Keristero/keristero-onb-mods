@@ -1,12 +1,14 @@
 local spoutman_action = include("spoutman_action/spoutman_action.lua")
+spoutman_action.damage = 50
 
 function package_init(package)
     local props = package:get_card_props()
+    
     --standard properties
     props.shortname = spoutman_action.name
     props.damage = spoutman_action.damage
     props.time_freeze = spoutman_action.time_freeze
-    props.element = Element.None
+    props.element = Element.Aqua
     props.description = spoutman_action.description
     props.can_boost = spoutman_action.can_boost
     props.card_class = spoutman_action.card_class

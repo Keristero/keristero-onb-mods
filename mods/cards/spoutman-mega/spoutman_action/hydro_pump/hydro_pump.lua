@@ -6,11 +6,10 @@ local torrent_animation = _folderpath .. "torrent.animation"
 local impacts_texture = Engine.load_texture(_folderpath .. "../impacts.png")
 local impacts_animation = _folderpath .. "../impacts.animation"
 
-local splash_sound = Engine.load_audio(_folderpath .. "splash_sound.wav")
+local damage_sfx = Engine.load_audio(_folderpath .. "generic_damage.ogg")
+local woosh_sfx = Engine.load_audio(_folderpath .. "water_woosh.ogg")
 
 local hydro_pump = {}
-
-local do_nothing = function() end
 
 hydro_pump.create_torrent = function(actor, damage, distance)
     local team = actor:get_team()
@@ -18,8 +17,6 @@ hydro_pump.create_torrent = function(actor, damage, distance)
     local field = actor:get_field()
     local tile = actor:get_tile()
 
-    local starting_x_offset = 0
-    local starting_y_offset = 0
     local torrent_artifacts = {}
     local spell = Battle.Spell.new(team)
     spell.frames_alive = 0
@@ -35,21 +32,25 @@ hydro_pump.create_torrent = function(actor, damage, distance)
         )
     )
     
-    local create_torrent_artifact = function(torrent_index)
+    local create_torrent_artifact = function(torrent_index,is_first)
         local artifact = Battle.Artifact.new()
         artifact:set_facing(facing)
         artifact:set_texture(torrent_texture)
-        local x_offset = starting_x_offset + (torrent_index*80)
-        artifact:set_offset(x_offset, starting_y_offset)
+        local tile_width_offset = 80
+        if facing == Direction.Left then
+            tile_width_offset = -80
+        end
+        local x_offset = (torrent_index*tile_width_offset)
+        artifact:set_offset(x_offset, 0)
         local artifact_anim = artifact:get_animation()
         local artifact_sprite = artifact:sprite()
         artifact_sprite:set_layer(-2)
         artifact_anim:load(torrent_animation)
-        if torrent_index == 0 then
+        if is_first then
             artifact_anim:set_state("TORRENT_START")
-        elseif torrent_index == distance-1 then
+        elseif torrent_index == distance then
             artifact_anim:set_state("TORRENT_SPREAD")
-            local target_tile = actor:get_tile(facing, distance-1)
+            local target_tile = actor:get_tile(facing, distance)
             spell.target_tiles[#spell.target_tiles + 1] = target_tile
             spell.target_tiles[#spell.target_tiles + 1] = target_tile:get_tile(Direction.Up, 1)
             spell.target_tiles[#spell.target_tiles + 1] = target_tile:get_tile(Direction.Down, 1)
@@ -65,16 +66,17 @@ hydro_pump.create_torrent = function(actor, damage, distance)
     local frames_to_damage_on = {[0] = true, [31] = true, [61] = true}
 
     spell.update_func = function(self)
+        Engine.play_audio(woosh_sfx,AudioPriority.High)
         -- create artifacts for each part of the animation
+        local torrent_first_artifact = create_torrent_artifact(0,true)
+        torrent_artifacts[#torrent_artifacts + 1] = torrent_first_artifact
+        field:spawn(torrent_first_artifact,tile:x(),tile:y())
         for i = 1, distance, 1 do
             local torrent_body_artifact = create_torrent_artifact(#torrent_artifacts)
             torrent_artifacts[#torrent_artifacts + 1] = torrent_body_artifact
             field:spawn(torrent_body_artifact,tile:x(),tile:y())
         end
 
-        if actor:get_facing() == Direction.Left then
-            start_offset_x = start_offset_x * -1
-        end
         spell.update_func = function()
             print(spell.frames_alive)
             for index, tile in ipairs(self.target_tiles) do
@@ -105,6 +107,7 @@ function create_damage_spell(team,hitprops)
         self:erase()
     end
     spell.collision_func = function(self)
+        Engine.play_audio(damage_sfx,AudioPriority.High)
         battle_helpers.spawn_visual_artifact(spell, self:get_current_tile(), impacts_texture,impacts_animation, "1", 0, 0)
     end
     return spell

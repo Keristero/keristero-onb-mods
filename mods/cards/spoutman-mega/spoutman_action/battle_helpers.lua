@@ -39,28 +39,34 @@ function battle_helpers.find_all_enemies(user)
     return list
 end
 
-function battle_helpers.find_targets_ahead(user)
+function battle_helpers.find_targets_ahead(user,exclude_obstacles,only_same_y)
     local field = user:get_field()
     local user_tile = user:get_current_tile()
     local user_team = user:get_team()
     local user_facing = user:get_facing()
     local list = field:find_entities(function(entity)
-        if Battle.Character.from(entity) == nil and Battle.Obstacle.from(entity) == nil then
+        local not_character = Battle.Character.from(entity) == nil
+        local not_obstacle = Battle.Obstacle.from(entity) == nil
+        if not_character and (not_obstacle or exclude_obstacles) then
             return false
         end
         local entity_tile = entity:get_current_tile()
-        if entity_tile:y() == user_tile:y() and entity:get_team() ~= user_team then
-            if user_facing == Direction.Left then
-                if entity_tile:x() < user_tile:x() then
-                    return true
-                end
-            elseif user_facing == Direction.Right then
-                if entity_tile:x() > user_tile:x() then
-                    return true
-                end
-            end
+        if entity_tile:y() ~= user_tile:y() and only_same_y then
             return false
         end
+        if entity:get_team() == user_team then
+            return false
+        end
+        if user_facing == Direction.Left then
+            if entity_tile:x() < user_tile:x() then
+                return true
+            end
+        elseif user_facing == Direction.Right then
+            if entity_tile:x() > user_tile:x() then
+                return true
+            end
+        end
+        return false
     end)
     return list
 end

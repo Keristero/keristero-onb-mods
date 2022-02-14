@@ -10,6 +10,7 @@ local splash_texture = Engine.load_texture(_folderpath .. "splash.png")
 local splash_animation = _folderpath .. "splash.animation"
 
 local splash_sound =  Engine.load_audio(_folderpath.."splash_sound.wav")
+local shoot_sound =  Engine.load_audio(_folderpath.."bubbler_shoot.ogg")
 
 local bubbler = {}
 
@@ -32,6 +33,8 @@ bubbler.create_aqua_shot = function(player, context,damage)
     if player:get_facing() == Direction.Left then
         start_offset_x = start_offset_x * -1
     end
+
+    Engine.play_audio(shoot_sound,AudioPriority.High)
 
     spell:set_offset(start_offset_x, start_offset_y)
 
