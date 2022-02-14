@@ -21,8 +21,6 @@ local spoutman = {
     card_class=CardClass.Mega
 }
 
-print('SPOUTMAN loading!!!')
-
 spoutman.card_create_action = function(user, props)
     print("in create_card_action()!")
     local action = Battle.CardAction.new(user, "PLAYER_IDLE")
@@ -39,7 +37,7 @@ spoutman.card_create_action = function(user, props)
 
         local actor = self:get_actor()
         local field = actor:get_field()
-        local tile = actor:get_current_tile()
+        local current_tile = actor:get_current_tile()
         local facing = user:get_facing()
 
         local spoutman_pre_attack_frames = 32
@@ -58,7 +56,7 @@ spoutman.card_create_action = function(user, props)
             action.spoutman_artifact:set_texture(spoutman_texture, true)
             action.spoutman_artifact:set_facing(facing)
             local anim = action.spoutman_artifact:get_animation()
-            field:spawn(action.spoutman_artifact,tile:x(),tile:y())
+            field:spawn(action.spoutman_artifact,current_tile:x(),current_tile:y())
             anim:load(spoutman_animation_path)
             anim:set_state("APPEAR")
             anim:refresh(action.spoutman_artifact:sprite())
@@ -88,10 +86,10 @@ spoutman.card_create_action = function(user, props)
             --decide if spoutman should use bubbler or hose
             local field = actor:get_field()
             local actor_tile = actor:get_current_tile()
-            if facing == Direction.Right and actor_tile:x() <= 100 then
+            if facing == Direction.Right and actor_tile:x() <= 2 then
                 --if player is in back two tiles (facing right)
                 should_use_hose = true
-            elseif facing == Direction.Left and actor_tile:x() >= field:width()-100 then
+            elseif facing == Direction.Left and actor_tile:x() >= field:width()-1 then
                 --if player is in back two tiles (facing left)
                 should_use_hose = true
             else
@@ -139,30 +137,35 @@ spoutman.card_create_action = function(user, props)
                     return
                 end
                 --find enemies ahead of user (any row)
-                local targets = battle_helpers.find_targets_ahead(user,true,false)
-                table.sort(targets,function (a, b)
-                    --sort the targets so the closest is first
-                    return a:get_current_tile():x() < b:get_current_tile():x()
-                end)
-
-                print('SPOUTMAN FOUND',#targets)
+                local target = battle_helpers.get_first_target_ahead(user,false,true,true,false)
 
                 --if there is an enemy ahead of the user, get the first one
                 local distance = 0
-                if #targets > 0 then
-                    distance = math.abs(tile:x()-targets[1]:get_current_tile():x())
+                --if there is a nearby character, hit that
+                if target then
+                    distance = math.abs(current_tile:x()-target:get_current_tile():x())
                 else
+                    --if there is no neaby character, hit end of field
                     if facing == Direction.Right then
-                        distance = math.abs(tile:x()-field:width())
+                        distance = math.abs(current_tile:x()-field:width())
                     else
-                        distance = tile:x()-1
+                        distance = current_tile:x()-1
                     end
                 end
+                --if there is an obstacle straight ahead, hit that instead
+                local blocking_obstacle = battle_helpers.get_first_target_ahead(user,false,false,false,true)
+                if blocking_obstacle then
+                    obstacle_distance = math.abs(current_tile:x()-blocking_obstacle:get_current_tile():x())
+                    distance = math.min(obstacle_distance,distance)
+                end
 
+                --create the torrent
+                local torrent = hydro_pump.create_torrent(actor,props.damage, distance)
+                field:spawn(torrent,current_tile:x(),current_tile:y())
+
+                --Wiggle spoutman while hose is blasting
                 local frames_till_wiggle = 4
                 local wiggle_offset = -2
-                local torrent = hydro_pump.create_torrent(actor,props.damage, distance)
-                field:spawn(torrent,tile:x(),tile:y())
                 steps[5].update_func = function ()
                     --spoutman wiggles while firing the hydro pump
                     if not torrent:is_deleted() then
@@ -185,7 +188,7 @@ spoutman.card_create_action = function(user, props)
                 action.hose_artifact = Battle.Artifact.new()
                 action.hose_artifact:set_texture(hose_texture, true)
                 local hose_anim = action.hose_artifact:get_animation()
-                field:spawn(action.hose_artifact,tile:x(),tile:y())
+                field:spawn(action.hose_artifact,current_tile:x(),current_tile:y())
                 hose_anim:load(hose_animation_path)
                 hose_anim:set_state("DEFAULT")
                 hose_anim:refresh(action.hose_artifact:sprite())

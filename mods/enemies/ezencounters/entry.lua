@@ -119,9 +119,22 @@ function package_build(mob,data)
                 {name="Sniper",rank=1},
             },
             positions = {
-                {0,0,0,1,0,0},
-                {0,0,0,0,2,0},
+                {0,0,0,0,3,0},
+                {0,0,0,0,0,0},
                 {0,0,0,0,0,3}
+            },
+            player_positions = {
+                {0,0,0,0,0,0},
+                {0,1,0,0,0,0},
+                {0,0,0,0,0,0}
+            },
+            obstacles = {
+                {name="RockCube"},
+            },
+            obstacle_positions = {
+                {0,0,0,0,0,0},
+                {0,0,0,1,0,0},
+                {0,0,0,0,0,0}
             }
         }
     end

@@ -32,24 +32,21 @@ hydro_pump.create_torrent = function(actor, damage, distance)
         )
     )
     
-    local create_torrent_artifact = function(torrent_index,is_first)
+    local create_torrent_artifact = function(torrent_index,is_first,starting_tile)
         local artifact = Battle.Artifact.new()
         artifact:set_facing(facing)
         artifact:set_texture(torrent_texture)
-        local tile_width_offset = 80
-        if facing == Direction.Left then
-            tile_width_offset = -80
-        end
-        local x_offset = (torrent_index*tile_width_offset)
-        artifact:set_offset(x_offset, 0)
+        local tile = starting_tile:get_tile(facing,torrent_index)
         local artifact_anim = artifact:get_animation()
         local artifact_sprite = artifact:sprite()
-        artifact_sprite:set_layer(-2)
+        artifact_sprite:set_layer(-3)
         artifact_anim:load(torrent_animation)
         if is_first then
             artifact_anim:set_state("TORRENT_START")
+            artifact_sprite:set_layer(-4)
         elseif torrent_index == distance then
             artifact_anim:set_state("TORRENT_SPREAD")
+            artifact_sprite:set_layer(-4)
             local target_tile = actor:get_tile(facing, distance)
             spell.target_tiles[#spell.target_tiles + 1] = target_tile
             spell.target_tiles[#spell.target_tiles + 1] = target_tile:get_tile(Direction.Up, 1)
@@ -60,6 +57,7 @@ hydro_pump.create_torrent = function(actor, damage, distance)
         end
         artifact_anim:refresh(artifact_sprite)
         artifact_anim:set_playback(Playback.Loop)
+        field:spawn(artifact,tile:x(),tile:y())
         return artifact
     end
     local last_frame_number = 62
@@ -68,23 +66,19 @@ hydro_pump.create_torrent = function(actor, damage, distance)
     spell.update_func = function(self)
         Engine.play_audio(woosh_sfx,AudioPriority.High)
         -- create artifacts for each part of the animation
-        local torrent_first_artifact = create_torrent_artifact(0,true)
+        local torrent_first_artifact = create_torrent_artifact(0,true,spell:get_current_tile())
         torrent_artifacts[#torrent_artifacts + 1] = torrent_first_artifact
-        field:spawn(torrent_first_artifact,tile:x(),tile:y())
         for i = 1, distance, 1 do
-            local torrent_body_artifact = create_torrent_artifact(#torrent_artifacts)
+            local torrent_body_artifact = create_torrent_artifact(#torrent_artifacts,false,spell:get_current_tile())
             torrent_artifacts[#torrent_artifacts + 1] = torrent_body_artifact
-            field:spawn(torrent_body_artifact,tile:x(),tile:y())
         end
 
         spell.update_func = function()
-            print(spell.frames_alive)
             for index, tile in ipairs(self.target_tiles) do
                 tile:highlight(Highlight.Solid)
                 if frames_to_damage_on[spell.frames_alive] then
                     --tile:attack_entities(spell)
                     field:spawn(create_damage_spell(team,spell:copy_hit_props()),tile:x(),tile:y())
-                    print('attacking tile',tile:x(),",",tile:y())
                 end
             end
             spell.frames_alive = spell.frames_alive + 1

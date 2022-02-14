@@ -1,4 +1,6 @@
 --Functions for easy reuse in scripts
+--Version 2.0 (added reversable sort, add any_row,exclude_obstacles,exclude_characters to get first target ahead)
+--Version 1.9 (added only_same_y and ignore_obstales arguments for `find targets ahead`)
 --Version 1.8 (optionally ignore neutral team for get_first_target_ahead, add is_tile_free_for_movement)
 --Version 1.7 (fixed find targets ahead getting non character/obstacles)
 
@@ -39,7 +41,19 @@ function battle_helpers.find_all_enemies(user)
     return list
 end
 
-function battle_helpers.find_targets_ahead(user,exclude_obstacles,only_same_y)
+function battle_helpers.reversable_sort(p_table,sort_function,reverse_sorting)
+    --print('sorting mob tracker turn order')
+    local reversable_sort = function(a,b)
+        local bool_result = sort_function(a,b)
+        if reverse_sorting then
+            bool_result = not bool_result
+        end
+        return bool_result
+    end
+    table.sort(p_table,reversable_sort)
+end
+
+function battle_helpers.find_targets_ahead(user,any_row,exclude_obstacles,exclude_characters)
     local field = user:get_field()
     local user_tile = user:get_current_tile()
     local user_team = user:get_team()
@@ -47,11 +61,14 @@ function battle_helpers.find_targets_ahead(user,exclude_obstacles,only_same_y)
     local list = field:find_entities(function(entity)
         local not_character = Battle.Character.from(entity) == nil
         local not_obstacle = Battle.Obstacle.from(entity) == nil
-        if not_character and (not_obstacle or exclude_obstacles) then
+        if not_character and not_obstacle then
+            return false
+        end
+        if (not_character and exclude_obstacles) or (not_obstacle and exclude_characters) then
             return false
         end
         local entity_tile = entity:get_current_tile()
-        if entity_tile:y() ~= user_tile:y() and only_same_y then
+        if entity_tile:y() ~= user_tile:y() and not any_row then
             return false
         end
         if entity:get_team() == user_team then
@@ -71,10 +88,11 @@ function battle_helpers.find_targets_ahead(user,exclude_obstacles,only_same_y)
     return list
 end
 
-function battle_helpers.get_first_target_ahead(user,ignore_neutral_team)
+function battle_helpers.get_first_target_ahead(user,ignore_neutral_team,any_row,exclude_obstacles,exclude_characters)
     local facing = user:get_facing()
-    local targets = battle_helpers.find_targets_ahead(user)
+    local targets = battle_helpers.find_targets_ahead(user,any_row,exclude_obstacles,exclude_characters)
     local filtered_targets = {}
+    local reverse_sort = facing == Direction.Left
     if ignore_neutral_team then
         for index, target in ipairs(targets) do
             if target:get_team() ~= Team.Other then
@@ -84,17 +102,14 @@ function battle_helpers.get_first_target_ahead(user,ignore_neutral_team)
     else
         filtered_targets = targets
     end
-    table.sort(filtered_targets,function (a, b)
-        return a:get_current_tile():x() > b:get_current_tile():x()
-    end)
+    battle_helpers.reversable_sort(filtered_targets,function (a, b)
+        return a:get_current_tile():x() < b:get_current_tile():x()
+    end,reverse_sort)
+
     if #filtered_targets == 0 then
         return nil
     end
-    if filtered_targets == Direction.Left then
-        return filtered_targets[1]
-    else
-        return filtered_targets[#filtered_targets]
-    end
+    return filtered_targets[1]
 end
 
 function battle_helpers.drop_trace_fx(target_artifact,lifetime_ms)
