@@ -1,0 +1,17 @@
+animation state="0"
+frame duration="0.05" x="104" y="88" w="20" h="22" originx="9" originy="21"
+frame duration="0.05" x="53" y="129" w="27" h="30" originx="14" originy="27"
+frame duration="0.067" x="54" y="45" w="47" h="37" originx="24" originy="31"
+frame duration="0.067" x="2" y="2" w="48" h="39" originx="25" originy="32"
+frame duration="0.067" x="2" y="88" w="47" h="37" originx="24" originy="31"
+frame duration="0.067" x="54" y="2" w="48" h="39" originx="25" originy="32"
+frame duration="0.05" x="53" y="88" w="47" h="37" originx="24" originy="31"
+frame duration="0.05" x="84" y="129" w="27" h="30" originx="14" originy="27"
+frame duration="0.05" x="105" y="45" w="20" h="22" originx="9" originy="21"
+
+animation state="1"
+frame duration="0.05" x="106" y="2" w="20" h="22" originx="9" originy="21"
+frame duration="0.05" x="115" y="129" w="27" h="30" originx="14" originy="27"
+frame duration="0.067" x="2" y="129" w="47" h="37" originx="24" originy="31"
+frame duration="0.067" x="2" y="45" w="48" h="39" originx="25" originy="32"
+
