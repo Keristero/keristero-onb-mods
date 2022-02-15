@@ -4,6 +4,7 @@ local package_name = "ezencounters"
 --Everything under this comment is standard and does not need to be edited\
 local mob_package_id = "com."..package_prefix..".mob."..package_name
 local loaded_obstacles = {}
+local ramdomize_test_scenario = include('random_scenario.lua')
 
 local encounter_info = {
     enemy_packages = {
@@ -112,31 +113,7 @@ function package_build(mob,data)
     --can setup music, and field here
     if not data then
         --test data here
-        data = {
-            enemies = {
-                {name="Gunner",rank=1},
-                {name="Shooter",rank=1},
-                {name="Sniper",rank=1},
-            },
-            positions = {
-                {0,0,0,0,3,0},
-                {0,0,0,0,0,0},
-                {0,0,0,0,0,3}
-            },
-            player_positions = {
-                {0,0,0,0,0,0},
-                {0,1,0,0,0,0},
-                {0,0,0,0,0,0}
-            },
-            obstacles = {
-                {name="RockCube"},
-            },
-            obstacle_positions = {
-                {0,0,0,0,0,0},
-                {0,0,0,1,0,0},
-                {0,0,0,0,0,0}
-            }
-        }
+        data = ramdomize_test_scenario(encounter_info)
     end
     print('building package with data!')
     --load tile states from  data
