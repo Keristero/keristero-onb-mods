@@ -113,7 +113,8 @@ function package_build(mob,data)
     --can setup music, and field here
     if not data then
         --test data here
-        data = ramdomize_test_scenario(encounter_info)
+        local flip_field = false
+        data = ramdomize_test_scenario(encounter_info,flip_field)
     end
     print('building package with data!')
     --load tile states from  data

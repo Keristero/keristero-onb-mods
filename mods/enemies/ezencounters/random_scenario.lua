@@ -1,4 +1,4 @@
-function ramdomize_test_scenario(encounter_info)
+function ramdomize_test_scenario(encounter_info,flip_field)
     --while developing mods it is useful to be able to test with a wide variety of battle scenarios
     --this function will return a randomized scenario to help testing edge cases
     local random_key_from_dict = function (dict)
@@ -35,7 +35,6 @@ function ramdomize_test_scenario(encounter_info)
         end
         return array
     end
-    local flip_field = true
     local data = {
         enemies = {
             {name=random_key_from_dict(encounter_info.enemy_packages),rank=1},
