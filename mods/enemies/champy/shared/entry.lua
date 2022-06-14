@@ -131,6 +131,7 @@ local function vanishing_teleport_action(user,target_tile)
         local actor = ref:get_actor()
         local field = actor:get_field()
         local start_tile = actor:get_current_tile()
+        local same_tile = start_tile:x() == target_tile:x() and start_tile:y() == target_tile:y()
         local done_teleport = false
         local done_punch = false
         local done_2nd_punch = false
@@ -262,12 +263,15 @@ local function vanishing_teleport_action(user,target_tile)
 
         step5.update_func = function(self, dt)
             debug_print("vanishing teleport STEP 5")
-            teleport_artifact(user,user:get_current_tile())
-            local did_teleport = user:teleport(start_tile,ActionOrder.Involuntary)
-            if did_teleport then
-                teleport_artifact(user,start_tile)
-                self:complete_step()
+            if not same_tile then
+                teleport_artifact(user,user:get_current_tile())
+                local did_teleport = user:teleport(start_tile,ActionOrder.Involuntary)
+                if did_teleport then
+                    teleport_artifact(user,start_tile)
+                    self:complete_step()
+                end
             end
+            self:complete_step()
         end
 
         self:add_step(step1)
