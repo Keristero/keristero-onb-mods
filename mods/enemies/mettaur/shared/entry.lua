@@ -81,6 +81,7 @@ function package_init(self,character_info)
     self.shockwave_animation = character_info.shockwave_animation
     self.shockwave_damage = character_info.damage
     self.can_guard = character_info.can_guard
+    self.replacement_panel = character_info.replacement_panel
     self.ai_wait = self.frames_between_actions
     self.ai_taken_turn = false
 
@@ -98,6 +99,7 @@ function package_init(self,character_info)
 
     self.battle_start_func = function(self)
         debug_print("battle_start_func called")
+        add_enemy_to_tracking(self)
         local field = self:get_field()
         local mob_sort_func = function(a,b)
             local met_a_tile = field:get_entity(a):get_current_tile()
@@ -116,7 +118,10 @@ function package_init(self,character_info)
     end
     self.on_spawn_func = function(self, spawn_tile)
         debug_print("on_spawn_func called")
-        add_enemy_to_tracking(self)
+        --In theory we should not need to do this as they would be cleared at the end of the last battle
+        --However there is a bug in ONB V2 which causes battle_end_func to be missed sometimes.
+        left_mob_tracker:clear()
+        right_mob_tracker:clear()
     end
     self.can_move_to_func = function(tile)
         debug_print("can_move_to_func called")
@@ -263,7 +268,7 @@ function action_shockwave(character)
         end)
 		self:add_anim_action(12,function()
             local tile = character:get_tile(facing,1)
-            spawn_shockwave(character, tile, facing, character.shockwave_damage, wave_texture,character.shockwave_animation, wave_sfx, character.cascade_frame_index)
+            spawn_shockwave(character, tile, facing, character.shockwave_damage, wave_texture,character.shockwave_animation, wave_sfx, character.cascade_frame_index,character.replacement_panel)
         end)
         self:add_anim_action(13,function ()
             character:toggle_counter(false)
@@ -285,7 +290,7 @@ function is_tile_free_for_movement(tile,character)
     return true
 end
 
-function spawn_shockwave(owner, tile, direction, damage, wave_texture,wave_animation, wave_sfx, cascade_frame_index)
+function spawn_shockwave(owner, tile, direction, damage, wave_texture,wave_animation, wave_sfx, cascade_frame_index,new_tile_state)
     local owner_id = owner:get_id()
     local team = owner:get_team()
     local field = owner:get_field()
@@ -318,6 +323,9 @@ function spawn_shockwave(owner, tile, direction, damage, wave_texture,wave_anima
 
         spell.update_func = function()
             spell:get_current_tile():attack_entities(spell)
+            if new_tile_state then
+                spell:get_current_tile():set_state(new_tile_state)
+            end
         end
 
         field:spawn(spell, tile)
