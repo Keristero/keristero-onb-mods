@@ -1,13 +1,27 @@
 local package_prefix = "keristero"
 local package_name = "ezencounters"
 
---Everything under this comment is standard and does not need to be edited\
 local mob_package_id = "com."..package_prefix..".mob."..package_name
 local loaded_obstacles = {}
 local ramdomize_test_scenario = include('random_scenario.lua')
 
 local encounter_info = {
     enemy_packages = {
+        Volgear="com.louise.char.Volgear",--V1,V2,V3,SP
+        KillerEye="com.louise.enemy.KillerEye",--V1,SP,R1,R2
+        DemonEye="com.louise.enemy.DemonEye",--V1
+        JokerEye="com.louise.enemy.JokerEye",--V1
+        HauntedCandle="com.louise.enemy.HauntedCandleHauntedCandle",--V1,V2,V3,SP,R1,R2
+        Fishy="com.louise.enemy.Fishy",--V1,V2,V3,SP
+        BombCorn="com.louise.enemy.CornBombCorn",--V1,SP,R1,R2
+        MegaCorn="com.louise.enemy.CornMegaCorn",--V1
+        GigaCorn="com.louise.enemy.CornGigaCorn",--V1
+        Bladia="com.EXE5.Bladia.Enemy",--V1
+        Metrid="com.EXE3.Metrid.Enemy",--V1,V2,V3,SP
+        Basher="com.EXE3.Basher.Enemy",--V1
+        FighterPlane="com.Dawn.Viruses.Enemy.FighterPlane",--V1,V2,V3,SP
+        Catack="com.Dawn.Requested.Enemy.Catack",--V1,V2,V3,SP
+        Ratty="com.Dawn.BN3.Enemy.Ratty",--V1,V2,V3,SP
         Champy="com.keristero.char.Champy",
         Chumpy="com.keristero.char.Chumpy",
         Chimpy="com.keristero.char.Chimpy",
@@ -108,6 +122,19 @@ function package_build(mob,data)
         loaded_obstacles[obstacle_alias] = include(script_path)
     end
     --work around end
+
+    --TESTING, uncomment to set up custom arrangements of enemies for testing
+    --[[local data = {
+        enemies = {
+            {name="Mettaur",rank=1},
+        },
+        positions = {
+            {0,0,0,0,0,1},
+            {0,0,0,0,1,0},
+            {0,0,0,1,0,0}
+        },
+    }]]
+    --
 
     local field = mob:get_field()
     --can setup music, and field here

@@ -299,6 +299,7 @@ local function package_init(character)
     character:share_tile(false)
     character:set_explosion_behavior(2, 1.0, false)
     character:set_offset(0, 0)
+    character:set_element(Element.Fire)
 
     --defense rules
     character.defense = Battle.DefenseVirusBody.new()
