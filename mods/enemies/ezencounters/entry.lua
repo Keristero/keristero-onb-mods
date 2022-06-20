@@ -94,12 +94,12 @@ function get_enum_value_by_index(mapping_table,p_index)
             return value
         end
     end
-    print("~WARNING~ invalid input data, no index",p_index)
+    print("[ezencounters] WARNING invalid input data, no index",p_index)
 end
 
 function package_requires_scripts()
     for mob_alias, package in pairs(encounter_info.enemy_packages) do
-        print('[ezencounters] requiring '..package)
+        --print('[ezencounters] requiring '..package)
         Engine.requires_character(package)
     end
 end
@@ -118,7 +118,7 @@ end
 function package_build(mob,data) 
     --First a work around to not crash the server, include the obstacle scripts here rather than in global scope
     for obstacle_alias, script_path in pairs(encounter_info.obstacles) do
-        print('[ezencounters] including '..script_path)
+        --print('[ezencounters] including '..script_path)
         loaded_obstacles[obstacle_alias] = include(script_path)
     end
     --work around end
@@ -143,7 +143,7 @@ function package_build(mob,data)
         local flip_field = false
         data = ramdomize_test_scenario(encounter_info,flip_field)
     end
-    print('building package with data!')
+    --print('building package with data!')
     --load tile states from  data
     if not data.tiles then
         data.tiles = encounter_info.field_tiles_default
@@ -169,19 +169,19 @@ function package_build(mob,data)
 
     --load enemies from data
     if not data.enemies then
-        print('~WARNING~ no enemies listed for encounter')
+        print('[ezencounters] WARNING no enemies listed for encounter')
         return
     end
     spawners = {}
     for index, enemy_info in ipairs(data.enemies) do
         local enemy_rank = get_enum_value_by_index(encounter_info.enemy_ranks,enemy_info.rank)
-        print("trying to make spawner for ",enemy_info.name,enemy_rank)
+        --print("trying to make spawner for ",enemy_info.name,enemy_rank)
         spawners[index] = mob:create_spawner(get_package_id(enemy_info.name),enemy_rank)
     end
 
     --spawn enemies at positions
     if not data.positions then
-        print('~WARNING~ no enemy spawn positions')
+        print('[ezencounters] WARNING no enemy spawn positions')
         return
     end
     for y, x_table in ipairs(data.positions) do
@@ -246,7 +246,7 @@ function package_build(mob,data)
                     local obstacle_info = data.obstacles[obstacle_id]
                     local create_obstacle_func = loaded_obstacles[obstacle_info.name]
                     local new_obstacle = create_obstacle_func()
-                    print('spawning obstacle '..obstacle_info.name..' at '..x..','..y)
+                    --print('spawning obstacle '..obstacle_info.name..' at '..x..','..y)
                     field:spawn(new_obstacle,x,y)
                 end
             end
