@@ -68,7 +68,7 @@ function ramdomize_test_scenario(encounter_info,flip_field)
         table.insert(random_tiles,math.random(1,14))
     end
     data.tiles = procedural_populate_array(x_positions,y_positions,random_tiles,1)
-    print("EZENCOUNTERS DEBUG MODE: FLIP FIELD = ",flip_field)
+    --print("EZENCOUNTERS DEBUG MODE: FLIP FIELD = ",flip_field)
     if flip_field then
         data.player_positions = flip_array_x(data.player_positions)
         data.positions = flip_array_x(data.positions)
