@@ -16,7 +16,7 @@ local reticle_animation_path = _folderpath .. "reticle.animation"
 local ground_bullet_texture = Engine.load_texture(_folderpath .. "ground_bullet.png")
 local ground_bullet_animation_path = _folderpath .. "ground_bullet.animation"
 
-function spell_delayed_bullet(character,target_tile,damage)
+function spell_delayed_bullet(character,target_tile,damage,break_tile)
     local facing = character:get_facing()
     local team = character:get_team()
     local spell = Battle.Spell.new(team)
@@ -30,8 +30,8 @@ function spell_delayed_bullet(character,target_tile,damage)
     spell.frames_before_impact = 10
     spell.warning_frames = 3
     spell:set_hit_props(HitProps.new(
-        10,
-        Hit.Flash,
+        damage,
+        Hit.Flash|Hit.Impact|Hit.Flinch,
         Element.None,
         character:get_context(),
         Drag.None)
@@ -49,6 +49,15 @@ function spell_delayed_bullet(character,target_tile,damage)
             self.frames_before_impact = self.frames_before_impact -1
         else
             tile:attack_entities(self)
+            if break_tile then
+                local tile_state = tile:get_state()
+                if tile_state == TileState.Normal then
+                    tile:set_state(TileState.Cracked)
+                elseif tile_state == TileState.Cracked then
+                    tile:set_state(TileState.Broken)
+                end
+                
+            end
         end
     end
     spell.can_move_to_func = function ()
@@ -168,7 +177,7 @@ function action_fire(character,target_tile,shots,shots_animated)
                 end
             end
         end
-        local spell_bullet = spell_delayed_bullet(character,scanned_tile,character.bullet_damage)
+        local spell_bullet = spell_delayed_bullet(character,scanned_tile,character.bullet_damage,character.break_tile)
         field:spawn(spell_bullet, scanned_tile:x(), scanned_tile:y())
         Engine.play_audio(gun_sfx, AudioPriority.Highest)
         action.bullets_fired = action.bullets_fired + 1
@@ -268,6 +277,7 @@ local function package_init(self)
     self.ai_state = "idle"
     self.cooldown = 30
     self.reticle_travel_frames = 13
+    self.breaks_tiles = false
     self.sweeping_reticle = false
     self.shots = 3
     local character = self
@@ -298,7 +308,7 @@ local function package_init(self)
                     filtered_targets[#filtered_targets+1] = entity
                 end
             end
-            if #filtered_targets > 0 then
+            if #filtered_targets > 0 or self.sweeping_reticle then
                 local action = action_scan(character)
                 action.action_end_func = function ()
                     if action.reticle_spell then

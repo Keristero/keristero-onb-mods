@@ -9,5 +9,6 @@ function package_init(character)
     character:set_health(220)
     character.reticle_travel_frames = 10
     character.bullet_damage = 50
+    character.break_tile = true
   end
 end
