@@ -16,7 +16,7 @@ local reticle_animation_path = _folderpath .. "reticle.animation"
 local ground_bullet_texture = Engine.load_texture(_folderpath .. "ground_bullet.png")
 local ground_bullet_animation_path = _folderpath .. "ground_bullet.animation"
 
-function spell_delayed_bullet(character,target_tile,damage,break_tile)
+function spell_delayed_bullet(character,target_tile,damage,new_tile_state)
     local facing = character:get_facing()
     local team = character:get_team()
     local spell = Battle.Spell.new(team)
@@ -49,14 +49,8 @@ function spell_delayed_bullet(character,target_tile,damage,break_tile)
             self.frames_before_impact = self.frames_before_impact -1
         else
             tile:attack_entities(self)
-            if break_tile then
-                local tile_state = tile:get_state()
-                if tile_state == TileState.Normal then
-                    tile:set_state(TileState.Cracked)
-                elseif tile_state == TileState.Cracked then
-                    tile:set_state(TileState.Broken)
-                end
-                
+            if new_tile_state then
+                tile:set_state(new_tile_state)
             end
         end
     end
@@ -177,7 +171,7 @@ function action_fire(character,target_tile,shots,shots_animated)
                 end
             end
         end
-        local spell_bullet = spell_delayed_bullet(character,scanned_tile,character.bullet_damage,character.break_tile)
+        local spell_bullet = spell_delayed_bullet(character,scanned_tile,character.bullet_damage,character.set_tile_state)
         field:spawn(spell_bullet, scanned_tile:x(), scanned_tile:y())
         Engine.play_audio(gun_sfx, AudioPriority.Highest)
         action.bullets_fired = action.bullets_fired + 1
