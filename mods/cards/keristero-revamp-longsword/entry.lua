@@ -1,11 +1,15 @@
 local sword = include("sword_revamp/sword_revamp.lua")
 
-sword.name = "Sword"
-sword.description = "Cut 1 panel ahead"
+sword.name = "LongSword"
+sword.description = "Cut 2x1 ahead"
 sword.codes = {"S","W","D"}
 sword.damage = 80
+sword.attack_pattern = {
+    {1,2}
+}
 sword.card_class = CardClass.Standard
 sword.element = Element.Sword
+sword.cut_animation_state = "LONG"
 sword.apply_color_effect = function(node,progress)
     local r = 0
     local g = math.floor(220-progress*150)
@@ -13,6 +17,12 @@ sword.apply_color_effect = function(node,progress)
     local a = math.floor(255-progress*255)
     local color = Color.new( r, g, b, a )
     node:set_color(color)
+end
+sword.apply_scale_effect = function(node,original_width,original_height,progress)
+    local width = original_width
+    local height = original_height*1.2
+    node:set_width(width)
+    node:set_height(height)
 end
 
 function package_init(package)

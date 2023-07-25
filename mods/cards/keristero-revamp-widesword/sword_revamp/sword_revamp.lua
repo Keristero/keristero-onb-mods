@@ -1,4 +1,6 @@
---sword revamp V1.1
+--sword revamp V1.3
+--use solid highlight by default
+
 local battle_helpers = include("battle_helpers.lua")
 local blade_texture = Engine.load_texture(_folderpath .. "/assets/blade.png")
 local blade_animation = _folderpath .. "/assets/blade.animation"
@@ -110,8 +112,6 @@ local function find_target_tile(user,targeting_mode)
     return spell_center_tile
 end
 
-local relative_positions_to_attack = battle_helpers.get_tile_relative_positions_from_pattern(sword.attack_pattern,sword.attack_center_tile)
-
 sword.card_create_action = function(user,props)
     local user_sprite = user:sprite()
     local user_animation = user:get_animation()
@@ -122,6 +122,8 @@ sword.card_create_action = function(user,props)
     local blade_animation_frames = 10 --How many frames it takes to finish color/scale effects on blade trails
     local has_attacked = false
     local highlight_tiles_func = nil
+    
+    local relative_positions_to_attack = battle_helpers.get_tile_relative_positions_from_pattern(sword.attack_pattern,sword.attack_center_tile)
 
     --override sword swing animation frames
     action.frames = {{1,0.032},{2,0.032},{3,0.032},{4,0.032},{5,0.032},{6,0.128}}
@@ -177,7 +179,7 @@ sword.card_create_action = function(user,props)
         --Highlight the tiles we are going to attack to give a fair 1 frame warning, so nice
         if sword.highlight_tiles then
             local tiles_to_highlight = battle_helpers.get_tiles_at_relative_positions(field,spell_center_tile,relative_positions_to_attack)
-            highlight_tiles_func = battle_helpers.highlight_tiles_update_func(tiles_to_highlight,8,battle_helpers.highlight_style.fast_wave)
+            highlight_tiles_func = battle_helpers.highlight_tiles_update_func(tiles_to_highlight,8,battle_helpers.highlight_style.solid)
         end
 
         local cut_fx = battle_helpers.spawn_visual_artifact(user,spell_center_tile,cut_texture,cut_animation,sword.cut_animation_state,spell_center_tile:x(),spell_center_tile:y(),false)
