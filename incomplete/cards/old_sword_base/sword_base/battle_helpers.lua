@@ -1,4 +1,5 @@
 --Functions for easy reuse in scripts
+--Version 2.2 (added highlight_tiles_update_func)
 --Version 2.1 (added get_tile_relative_positions_from_pattern,get_tiles_at_relative_positions,attack_tiles,sum_relative_positions_between_animation_points)
 --Version 2.0 (added reversable sort, add any_row,exclude_obstacles,exclude_characters to get first target ahead)
 --Version 1.9 (added only_same_y and ignore_obstales arguments for `find targets ahead`)
@@ -206,6 +207,52 @@ function battle_helpers.attack_tiles(spell,tiles)
     for index, tile in ipairs(tiles) do
         tile:attack_entities(spell)
     end
+end
+
+--Call this to get a function that you can call every frame to keep the specified tiles highlighted for the specified number of frames
+--Once the function is finished it will delete itself, so be sure to check for nil when calling it in your update func
+--You can chose a highlight style for various highlighting animations
+battle_helpers.highlight_style = {
+    solid = 1,--always yellow
+    fast_wave = 2,--fast wave based on tile x and y
+}
+function battle_helpers.highlight_tiles_update_func(tiles,max_frames,highlight_style)
+    if not highlight_style then
+        highlight_style = battle_helpers.highlight_style.solid
+    end
+    local elapsed_frames = 0
+    local update_callback = nil
+    --if
+    if highlight_style == battle_helpers.highlight_style.solid then
+        update_callback = function ()
+            if elapsed_frames > max_frames then
+                update_callback = nil
+                return
+            end
+            for index, tile in ipairs(tiles) do
+                tile:highlight(Highlight.Solid)
+            end
+            elapsed_frames = elapsed_frames + 1
+        end
+    end
+    if highlight_style == battle_helpers.highlight_style.fast_wave then
+        update_callback = function ()
+            if elapsed_frames > max_frames then
+                update_callback = nil
+                return
+            end
+            for index, tile in ipairs(tiles) do
+                local i = elapsed_frames+tile:x()+tile:y()
+                if i % 8 > 2 then
+                    tile:highlight(Highlight.None)
+                else
+                    tile:highlight(Highlight.Solid)
+                end
+            end
+            elapsed_frames = elapsed_frames + 1
+        end
+    end
+    return update_callback
 end
 
 function battle_helpers.is_tile_free_for_movement(tile,character,must_be_walkable)
