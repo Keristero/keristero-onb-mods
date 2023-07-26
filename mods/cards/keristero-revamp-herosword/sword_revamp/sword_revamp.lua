@@ -1,5 +1,5 @@
---sword revamp V1.4
---add basic particles and raise the cut fx y offset
+--sword revamp V1.6
+--particles get fancy
 
 local battle_helpers = include("battle_helpers.lua")
 local blade_texture = Engine.load_texture(_folderpath .. "/assets/blade.png")
@@ -41,14 +41,16 @@ local sword = {
     fallback_attack_pattern_center=sword_attack_positions.player_front,
     --Possible values: (same as attack_pattern_center, but only used if no target was found initially)
     attack_pattern = {
-        {1}
+        {1},
     },
     attack_center_tile=true,
     highlight_tiles=true,
     blade_particle_animation_state = nil,
     cut_animation_state = "STANDARD",
     hit_particle_animation_state = "SMALL_GREEN",
-    cut_afterimages = {},--{{lifetime_ms,velocity_x,velocity_y},...}
+    cut_afterimages = {},--{{lifetime_frames,velocity_x,velocity_y},...}
+    cut_offset_x = 0,
+    cut_offset_y = -20,
     sfx = Engine.load_audio(_folderpath.."sfx.ogg"),
     apply_scale_effect = function(node,original_width,original_height,progress)
         local width = original_width
@@ -63,6 +65,22 @@ local sword = {
         local a = math.floor(255-progress*255)
         local color = Color.new( r, g, b, a )
         node:set_color(color)
+    end,
+    particle_color_effect = function (fx)
+        local current_offset = fx:get_offset()
+        local new_x = current_offset.x+2
+        local new_y = current_offset.y
+        battle_helpers.update_offset(fx,new_x,new_y)
+    end,
+    afterimage_update = function(afterimage,progress,x_vel,y_vel)
+        local r = math.floor(220-progress*150)
+        local g = math.floor(200-progress*40)
+        local b = math.floor(255-progress*255)
+        local a = math.floor(100-progress*100)
+        local color = Color.new( r, g, b, a )
+        local offset = afterimage:get_offset()
+        battle_helpers.update_offset(afterimage,offset.x+x_vel,offset.y+y_vel)
+        afterimage:set_color(color)
     end
 }
 
@@ -114,6 +132,20 @@ local function find_target_tile(user,targeting_mode)
         spell_center_tile = target:get_current_tile()
     end
     return spell_center_tile
+end
+
+local function attach_update_effect_to_artifact(fx,update_effect,lifetime_frames,val_a,val_b)
+    fx:sprite():set_color_mode(2)
+    update_effect(fx,0,val_a,val_b)
+    fx.tic = 0
+    fx.update_func = function (self)
+        self.tic = self.tic + 1
+        update_effect(self,self.tic/lifetime_frames,val_a,val_b)
+        if self.tic >= lifetime_frames then
+            self:erase()
+        end
+    end
+    
 end
 
 sword.card_create_action = function(user,props)
@@ -186,12 +218,17 @@ sword.card_create_action = function(user,props)
             highlight_tiles_func = battle_helpers.highlight_tiles_update_func(tiles_to_highlight,8,battle_helpers.highlight_style.solid)
         end
 
-        local cut_fx = battle_helpers.spawn_visual_artifact(user,spell_center_tile,cut_texture,cut_animation,sword.cut_animation_state,0,-20,false)
+        local cut_fx = battle_helpers.spawn_visual_artifact(user,spell_center_tile,cut_texture,cut_animation,sword.cut_animation_state,sword.cut_offset_x,sword.cut_offset_y,false)
+        cut_fx:sprite():set_color_mode(2)
         cut_fx.update_func = function (self)
             sword.apply_color_effect(cut_fx,0)
             if not self.done_first_update then
                 for i, afterimage_data in ipairs(sword.cut_afterimages) do
-                    battle_helpers.drop_trace_fx(cut_fx,afterimage_data[1],afterimage_data[2],afterimage_data[3])
+                    local lifetime_frames = afterimage_data[1]
+                    local val_a = afterimage_data[2]
+                    local val_b = afterimage_data[3]
+                    local afterimage_fx = battle_helpers.spawn_visual_artifact(user,spell_center_tile,cut_texture,cut_animation,sword.cut_animation_state,sword.cut_offset_x,sword.cut_offset_y,false)
+                    attach_update_effect_to_artifact(afterimage_fx,sword.afterimage_update,lifetime_frames,val_a,val_b)
                 end
                 self.done_first_update = true
             end
@@ -266,12 +303,7 @@ sword.card_create_action = function(user,props)
                         local random_scale = math.random(50,80)/100
                         particle_sprite:set_width(particle_sprite:get_width()*random_scale)
                         particle_sprite:set_height(particle_sprite:get_height()*random_scale)
-                        particle.update_func = function (fx)
-                            local current_offset = fx:get_offset()
-                            local new_x = current_offset.x+2
-                            local new_y = current_offset.y
-                            fx:set_offset(new_x,new_y)
-                        end
+                        attach_update_effect_to_artifact(particle,sword.particle_color_effect,8)
                     end
                 end
             end

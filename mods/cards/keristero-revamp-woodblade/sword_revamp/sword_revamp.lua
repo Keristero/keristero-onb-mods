@@ -41,7 +41,7 @@ local sword = {
     fallback_attack_pattern_center=sword_attack_positions.player_front,
     --Possible values: (same as attack_pattern_center, but only used if no target was found initially)
     attack_pattern = {
-        {1}
+        {1},
     },
     attack_center_tile=true,
     highlight_tiles=true,
