@@ -1,5 +1,5 @@
---sword revamp V1.3
---use solid highlight by default
+--sword revamp V1.4
+--add basic particles and raise the cut fx y offset
 
 local battle_helpers = include("battle_helpers.lua")
 local blade_texture = Engine.load_texture(_folderpath .. "/assets/blade.png")
@@ -8,6 +8,8 @@ local cut_texture = Engine.load_texture(_folderpath .. "/assets/cut.png")
 local cut_animation = _folderpath .. "/assets/cut.animation"
 local hit_particle_texture = Engine.load_texture(_folderpath .. "/assets/hit_particles.png")
 local hit_particle_animation = _folderpath .. "/assets/hit_particles.animation"
+local particles_texture = Engine.load_texture(_folderpath .. "/assets/particles.png")
+local particles_animation = _folderpath .. "/assets/particles.animation"
 
 local sword_attack_positions = {
     on_player = 0,
@@ -43,6 +45,7 @@ local sword = {
     },
     attack_center_tile=true,
     highlight_tiles=true,
+    blade_particle_animation_state = nil,
     cut_animation_state = "STANDARD",
     hit_particle_animation_state = "SMALL_GREEN",
     cut_afterimages = {},--{{lifetime_ms,velocity_x,velocity_y},...}
@@ -72,6 +75,7 @@ local function create_new_blade_section(parent,texture,animation_path,state)
     --setup animation
     local anim = Engine.Animation.new(animation_path)
     anim:load(animation_path)
+
     --set animation frame
     anim:set_state(state)
     anim:refresh(node)
@@ -90,7 +94,7 @@ local function find_target_tile(user,targeting_mode)
         spell_center_tile = user:get_current_tile()
     end
     if targeting_mode == sword_attack_positions.on_closest_enemy then
-        target = battle_helpers.get_first_target_ahead(user,false,true,true,false)
+        target = battle_helpers.get_first_target_ahead(user,true,true,true,false)
     end
     if targeting_mode == sword_attack_positions.on_first_target_ahead then
         target = battle_helpers.get_first_target_ahead(user,false,false,false,false)
@@ -182,9 +186,9 @@ sword.card_create_action = function(user,props)
             highlight_tiles_func = battle_helpers.highlight_tiles_update_func(tiles_to_highlight,8,battle_helpers.highlight_style.solid)
         end
 
-        local cut_fx = battle_helpers.spawn_visual_artifact(user,spell_center_tile,cut_texture,cut_animation,sword.cut_animation_state,spell_center_tile:x(),spell_center_tile:y(),false)
+        local cut_fx = battle_helpers.spawn_visual_artifact(user,spell_center_tile,cut_texture,cut_animation,sword.cut_animation_state,0,-20,false)
         cut_fx.update_func = function (self)
-            sword.apply_color_effect(cut_fx,0.2)
+            sword.apply_color_effect(cut_fx,0)
             if not self.done_first_update then
                 for i, afterimage_data in ipairs(sword.cut_afterimages) do
                     battle_helpers.drop_trace_fx(cut_fx,afterimage_data[1],afterimage_data[2],afterimage_data[3])
@@ -251,6 +255,24 @@ sword.card_create_action = function(user,props)
 
                     --finally we can set the position of the blade relative to the player's origin
                     blade_section.node:set_offset(end_point_relative.x,end_point_relative.y)
+                    --create particles if we have specified one
+                    if sword.blade_particle_animation_state then
+                        local particle_x = (end_point_relative.x*2)+math.random(-20,20)
+                        local particle_y = (end_point_relative.y*2)+math.random(-20,0)
+                        local particle = battle_helpers.spawn_visual_artifact(user,user:get_current_tile(),particles_texture,particles_animation,sword.blade_particle_animation_state,particle_x,particle_y,true)
+                        local particle_sprite = particle:sprite()
+                        particle_sprite:set_layer(2)
+                        --initial visual variety
+                        local random_scale = math.random(50,80)/100
+                        particle_sprite:set_width(particle_sprite:get_width()*random_scale)
+                        particle_sprite:set_height(particle_sprite:get_height()*random_scale)
+                        particle.update_func = function (fx)
+                            local current_offset = fx:get_offset()
+                            local new_x = current_offset.x+2
+                            local new_y = current_offset.y
+                            fx:set_offset(new_x,new_y)
+                        end
+                    end
                 end
             end
         end
