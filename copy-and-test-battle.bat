@@ -6,7 +6,7 @@ REM com.keristero.player.Villager
 REM com.keristero.player.Protoman
 REM com.alrysc.player.ShanghaiFighter
 REM com.D3str0y3d.player.QuickmanWMoves
-set player="com.discord.Konstinople.player.AquaMan"
+set player="com.keristero.player.Villager"
 
 xcopy .\mods %game_path%\resources\mods /s/h/e/k/f/c/y/d
 cd %game_path%
