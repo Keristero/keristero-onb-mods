@@ -291,7 +291,7 @@ function is_tile_free_for_movement(tile,character)
 end
 
 function spawn_shockwave(owner, tile, direction, damage, wave_texture,wave_animation, wave_sfx, cascade_frame_index,new_tile_state)
-    local owner_id = owner:get_id()
+    local owner_context = owner:get_context()
     local team = owner:get_team()
     local field = owner:get_field()
     local cascade_frame = cascade_frame_index
@@ -304,7 +304,7 @@ function spawn_shockwave(owner, tile, direction, damage, wave_texture,wave_anima
         local spell = Battle.Spell.new(team)
         spell:set_facing(direction)
         spell:highlight_tile(Highlight.Solid)
-        spell:set_hit_props(HitProps.new(damage, Hit.Flash, Element.None, owner_id, Drag.new()))
+        spell:set_hit_props(HitProps.new(damage, Hit.Flash, Element.None, owner_context, Drag.new()))
 
         local sprite = spell:sprite()
         sprite:set_texture(wave_texture)
